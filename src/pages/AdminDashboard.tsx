@@ -5,6 +5,8 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, Users, FileText, TrendingUp, Truck, DollarSign } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 const StatCard = ({ title, value, icon: Icon, trend }: any) => (
   <Card>
@@ -96,15 +98,19 @@ const AdminDashboard = () => {
             <CardContent>
               <div className="space-y-4">
                 {[
-                  { action: 'New contract created', user: 'Sales Team', time: '5 min ago' },
-                  { action: 'Equipment dispatched', user: 'Warehouse', time: '15 min ago' },
-                  { action: 'Invoice generated', user: 'Finance', time: '1 hour ago' },
-                  { action: 'New customer added', user: 'Sales Team', time: '2 hours ago' },
+                  { action: 'New contract created', user: 'Sales Team', time: '5 min ago', type: 'contract' },
+                  { action: 'Equipment dispatched', user: 'Warehouse', time: '15 min ago', type: 'dispatch' },
+                  { action: 'Invoice generated', user: 'Finance', time: '1 hour ago', type: 'invoice' },
+                  { action: 'New customer added', user: 'Sales Team', time: '2 hours ago', type: 'customer' },
+                  { action: 'Payment received', user: 'Finance', time: '3 hours ago', type: 'payment' },
                 ].map((activity, i) => (
                   <div key={i} className="flex items-center justify-between py-2 border-b last:border-0">
-                    <div>
-                      <p className="font-medium text-sm">{activity.action}</p>
-                      <p className="text-xs text-muted-foreground">{activity.user}</p>
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className="text-xs">{activity.type}</Badge>
+                      <div>
+                        <p className="font-medium text-sm">{activity.action}</p>
+                        <p className="text-xs text-muted-foreground">{activity.user}</p>
+                      </div>
                     </div>
                     <span className="text-xs text-muted-foreground">{activity.time}</span>
                   </div>
@@ -143,6 +149,46 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>System Overview</CardTitle>
+            <CardDescription>Cross-department status and metrics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Active Tasks</TableHead>
+                  <TableHead>Pending Approvals</TableHead>
+                  <TableHead>Completed (Today)</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[
+                  { dept: 'Sales', active: 15, pending: 8, completed: 12, status: 'good' },
+                  { dept: 'Warehouse', active: 9, pending: 6, completed: 18, status: 'excellent' },
+                  { dept: 'Finance', active: 12, pending: 5, completed: 14, status: 'good' },
+                  { dept: 'Vendors', active: 8, pending: 3, completed: 10, status: 'good' },
+                ].map((dept) => (
+                  <TableRow key={dept.dept}>
+                    <TableCell className="font-medium">{dept.dept}</TableCell>
+                    <TableCell>{dept.active}</TableCell>
+                    <TableCell>{dept.pending}</TableCell>
+                    <TableCell>{dept.completed}</TableCell>
+                    <TableCell>
+                      <Badge variant={dept.status === 'excellent' ? 'default' : 'secondary'}>
+                        {dept.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );

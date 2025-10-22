@@ -5,6 +5,8 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, Truck, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
 const WarehouseDashboard = () => {
   const { user, role, loading } = useAuth();
@@ -77,74 +79,128 @@ const WarehouseDashboard = () => {
             <CardDescription>Real-time inventory overview</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[
-                {
-                  item: 'Scaffolding Tubes (6m)',
-                  code: 'ST-6M',
-                  available: 245,
-                  onRent: 180,
-                  total: 425,
-                },
-                {
-                  item: 'Base Plates',
-                  code: 'BP-STD',
-                  available: 89,
-                  onRent: 156,
-                  total: 245,
-                },
-                {
-                  item: 'Couplers (Swivel)',
-                  code: 'CP-SW',
-                  available: 34,
-                  onRent: 289,
-                  total: 323,
-                },
-                {
-                  item: 'Safety Harness',
-                  code: 'SH-PRO',
-                  available: 12,
-                  onRent: 45,
-                  total: 57,
-                },
-              ].map((item) => (
-                <div
-                  key={item.code}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold">{item.item}</p>
-                      <Badge variant="outline">{item.code}</Badge>
-                    </div>
-                    <div className="flex gap-4 text-sm">
-                      <span className="text-muted-foreground">
-                        Available: <span className="font-medium text-success">{item.available}</span>
-                      </span>
-                      <span className="text-muted-foreground">
-                        On Rent: <span className="font-medium text-primary">{item.onRent}</span>
-                      </span>
-                      <span className="text-muted-foreground">
-                        Total: <span className="font-medium">{item.total}</span>
-                      </span>
-                    </div>
-                  </div>
-                  <div className="w-32">
-                    <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary"
-                        style={{ width: `${(item.onRent / item.total) * 100}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1 text-right">
-                      {Math.round((item.onRent / item.total) * 100)}% utilized
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item Code</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Available</TableHead>
+                  <TableHead>On Rent</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Utilization</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[
+                  { code: 'ST-6M', item: 'Scaffolding Tubes (6m)', available: 245, onRent: 180, total: 425 },
+                  { code: 'BP-STD', item: 'Base Plates', available: 89, onRent: 156, total: 245 },
+                  { code: 'CP-SW', item: 'Couplers (Swivel)', available: 34, onRent: 289, total: 323 },
+                  { code: 'SH-PRO', item: 'Safety Harness', available: 12, onRent: 45, total: 57 },
+                  { code: 'PL-8M', item: 'Planks (8m)', available: 156, onRent: 234, total: 390 },
+                ].map((item) => {
+                  const utilization = Math.round((item.onRent / item.total) * 100);
+                  return (
+                    <TableRow key={item.code}>
+                      <TableCell className="font-medium">{item.code}</TableCell>
+                      <TableCell>{item.item}</TableCell>
+                      <TableCell className="text-success font-semibold">{item.available}</TableCell>
+                      <TableCell className="text-primary font-semibold">{item.onRent}</TableCell>
+                      <TableCell>{item.total}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="w-20 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-primary" style={{ width: `${utilization}%` }} />
+                          </div>
+                          <span className="text-sm">{utilization}%</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Dispatch</CardTitle>
+              <CardDescription>Orders ready for delivery</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Contract</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Items</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[
+                    { contract: 'RC-2025-078', customer: 'ABC Construction', items: 15, priority: 'high' },
+                    { contract: 'RC-2025-079', customer: 'XYZ Builders', items: 8, priority: 'normal' },
+                    { contract: 'RC-2025-080', customer: 'Elite Construction', items: 22, priority: 'high' },
+                    { contract: 'RC-2025-081', customer: 'Modern Builders', items: 12, priority: 'normal' },
+                  ].map((dispatch) => (
+                    <TableRow key={dispatch.contract}>
+                      <TableCell className="font-medium">{dispatch.contract}</TableCell>
+                      <TableCell>{dispatch.customer}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{dispatch.items} items</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button size="sm" variant={dispatch.priority === 'high' ? 'default' : 'outline'}>
+                          Process
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Expected Returns</CardTitle>
+              <CardDescription>Equipment due back this week</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Contract</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Return Date</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[
+                    { contract: 'RC-2025-045', customer: 'ABC Construction', returnDate: 'Oct 25, 2025', status: 'on_time' },
+                    { contract: 'RC-2025-038', customer: 'Urban Developers', returnDate: 'Oct 23, 2025', status: 'overdue' },
+                    { contract: 'RC-2025-052', customer: 'Prime Construction', returnDate: 'Oct 27, 2025', status: 'on_time' },
+                    { contract: 'RC-2025-048', customer: 'New Project LLC', returnDate: 'Oct 24, 2025', status: 'confirmed' },
+                  ].map((returns) => (
+                    <TableRow key={returns.contract}>
+                      <TableCell className="font-medium">{returns.contract}</TableCell>
+                      <TableCell>{returns.customer}</TableCell>
+                      <TableCell className="text-sm">{returns.returnDate}</TableCell>
+                      <TableCell>
+                        <Badge variant={returns.status === 'overdue' ? 'destructive' : returns.status === 'confirmed' ? 'default' : 'secondary'}>
+                          {returns.status.replace('_', ' ')}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </DashboardLayout>
   );
