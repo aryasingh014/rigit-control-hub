@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Building2 } from 'lucide-react';
+import { Loader2, Building2, Info } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -112,7 +113,18 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/20 to-background p-4">
-      <Card className="w-full max-w-md shadow-xl border-2">
+      <div className="w-full max-w-md space-y-4">
+        <Alert className="border-primary/50 bg-primary/5">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Demo Mode:</strong> View all{' '}
+            <Link to="/demo-credentials" className="underline font-semibold">
+              demo login credentials here
+            </Link>
+          </AlertDescription>
+        </Alert>
+
+        <Card className="shadow-xl border-2">
         <CardHeader className="text-center space-y-2">
           <div className="flex justify-center mb-2">
             <div className="p-3 bg-primary rounded-lg">
@@ -208,6 +220,7 @@ const Auth = () => {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

@@ -7,10 +7,13 @@ import { Package, Truck, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { DispatchEquipmentDialog } from '@/components/forms/DispatchEquipmentDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const WarehouseDashboard = () => {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -123,11 +126,16 @@ const WarehouseDashboard = () => {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pending Dispatch</CardTitle>
-              <CardDescription>Orders ready for delivery</CardDescription>
-            </CardHeader>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Pending Dispatch</CardTitle>
+                <CardDescription>Orders ready for delivery</CardDescription>
+              </div>
+              <DispatchEquipmentDialog />
+            </div>
+          </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
@@ -152,7 +160,11 @@ const WarehouseDashboard = () => {
                         <Badge variant="outline">{dispatch.items} items</Badge>
                       </TableCell>
                       <TableCell>
-                        <Button size="sm" variant={dispatch.priority === 'high' ? 'default' : 'outline'}>
+                        <Button 
+                          size="sm" 
+                          variant={dispatch.priority === 'high' ? 'default' : 'outline'}
+                          onClick={() => toast({ title: 'Processing Dispatch', description: `Processing ${dispatch.contract}` })}
+                        >
                           Process
                         </Button>
                       </TableCell>

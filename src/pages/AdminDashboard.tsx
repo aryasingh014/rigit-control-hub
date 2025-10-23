@@ -7,6 +7,7 @@ import { Package, Users, FileText, TrendingUp, Truck, DollarSign } from 'lucide-
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { AddEquipmentDialog } from '@/components/forms/AddEquipmentDialog';
 
 const StatCard = ({ title, value, icon: Icon, trend }: any) => (
   <Card>
@@ -55,11 +56,14 @@ const AdminDashboard = () => {
   return (
     <DashboardLayout role="admin">
       <div className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
-          <p className="text-muted-foreground">
-            Complete control over system configuration and operations
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
+            <p className="text-muted-foreground">
+              Complete control over system configuration and operations
+            </p>
+          </div>
+          <AddEquipmentDialog />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

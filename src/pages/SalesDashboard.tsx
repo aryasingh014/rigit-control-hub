@@ -7,10 +7,13 @@ import { Button } from '@/components/ui/button';
 import { FileText, Users, TrendingUp, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { CreateContractDialog } from '@/components/forms/CreateContractDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const SalesDashboard = () => {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -32,10 +35,7 @@ const SalesDashboard = () => {
               Manage rental contracts, quotations, and customer relationships
             </p>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Contract
-          </Button>
+          <CreateContractDialog />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -183,7 +183,13 @@ const SalesDashboard = () => {
                     <TableCell className="font-semibold">{quote.amount}</TableCell>
                     <TableCell className="text-sm">{quote.validUntil}</TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm">Follow Up</Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => toast({ title: 'Follow Up', description: `Following up with ${quote.customer}` })}
+                      >
+                        Follow Up
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

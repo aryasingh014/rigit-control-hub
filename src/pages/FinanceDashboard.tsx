@@ -7,10 +7,13 @@ import { DollarSign, FileText, AlertCircle, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { GenerateInvoiceDialog } from '@/components/forms/GenerateInvoiceDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const FinanceDashboard = () => {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!loading && !user) {
