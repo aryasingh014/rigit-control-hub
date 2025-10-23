@@ -7,14 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AddEquipmentDialog } from '@/components/forms/AddEquipmentDialog';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const equipmentData = [
-  { id: '1', itemCode: 'SCAFF-001', description: 'Aluminum Scaffolding Frame', category: 'Scaffolding', unit: 'Set', dailyRate: 150, quantityTotal: 100, quantityAvailable: 45, status: 'available' },
-  { id: '2', itemCode: 'SCAFF-002', description: 'Steel Support Beam', category: 'Scaffolding', unit: 'Piece', dailyRate: 75, quantityTotal: 200, quantityAvailable: 120, status: 'available' },
-  { id: '3', itemCode: 'FORM-001', description: 'Plywood Formwork Panel', category: 'Formwork', unit: 'Set', dailyRate: 120, quantityTotal: 80, quantityAvailable: 35, status: 'available' },
-  { id: '4', itemCode: 'SHORE-001', description: 'Adjustable Shoring Props', category: 'Shoring', unit: 'Piece', dailyRate: 90, quantityTotal: 150, quantityAvailable: 0, status: 'rented' },
+  { id: '1', itemCode: 'SCAFF-001', description: 'Aluminum Scaffolding Frame', category: 'Scaffolding', unit: 'Set', dailyRate: 150, quantityTotal: 100, quantityAvailable: 45, status: 'available', approvalStatus: 'approved' },
+  { id: '2', itemCode: 'SCAFF-002', description: 'Steel Support Beam', category: 'Scaffolding', unit: 'Piece', dailyRate: 75, quantityTotal: 200, quantityAvailable: 120, status: 'available', approvalStatus: 'approved' },
+  { id: '3', itemCode: 'FORM-001', description: 'Plywood Formwork Panel', category: 'Formwork', unit: 'Set', dailyRate: 120, quantityTotal: 80, quantityAvailable: 35, status: 'available', approvalStatus: 'pending' },
+  { id: '4', itemCode: 'SHORE-001', description: 'Adjustable Shoring Props', category: 'Shoring', unit: 'Piece', dailyRate: 90, quantityTotal: 150, quantityAvailable: 0, status: 'rented', approvalStatus: 'approved' },
 ];
 
 export const EquipmentCatalogModule = () => {
@@ -22,6 +22,23 @@ export const EquipmentCatalogModule = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const { toast } = useToast();
+
+  const handleApproveEquipment = (item: any) => {
+    const updatedItem = { ...item, approvalStatus: 'approved' };
+    setEquipment(equipment.map(e => e.id === item.id ? updatedItem : e));
+    toast({
+      title: 'Equipment Approved',
+      description: `${item.description} has been approved for use.`,
+    });
+  };
+
+  const handleRejectEquipment = (item: any) => {
+    setEquipment(equipment.filter(e => e.id !== item.id));
+    toast({
+      title: 'Equipment Rejected',
+      description: `${item.description} has been rejected and removed.`,
+    });
+  };
 
   const handleEdit = (item: any) => {
     setEditingItem(item);
@@ -52,7 +69,7 @@ export const EquipmentCatalogModule = () => {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Equipment Catalog</h3>
-          <p className="text-sm text-muted-foreground">Manage all equipment items</p>
+          <p className="text-sm text-muted-foreground">Manage equipment items with approval workflows</p>
         </div>
         <AddEquipmentDialog />
       </div>
@@ -167,6 +184,7 @@ export const EquipmentCatalogModule = () => {
               <TableHead>Total Qty</TableHead>
               <TableHead>Available</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Approval</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -185,17 +203,30 @@ export const EquipmentCatalogModule = () => {
                     {item.status}
                   </Badge>
                 </TableCell>
+                <TableCell>
+                  <Badge variant={item.approvalStatus === 'approved' ? 'default' : 'outline'}>
+                    {item.approvalStatus}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEdit(item)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(item.id, item.description)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-1 justify-end">
+                    {item.approvalStatus === 'pending' && (
+                      <>
+                        <Button variant="ghost" size="icon" title="Approve Equipment" onClick={() => handleApproveEquipment(item)}>
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button variant="ghost" size="icon" title="Reject Equipment" onClick={() => handleRejectEquipment(item)}>
+                          <XCircle className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </>
+                    )}
+                    <Button variant="ghost" size="icon" title="Edit Equipment" onClick={() => handleEdit(item)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" title="Delete Equipment" onClick={() => handleDelete(item.id, item.description)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

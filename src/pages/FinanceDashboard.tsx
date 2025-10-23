@@ -12,6 +12,9 @@ import { GenerateInvoiceDialog } from '@/components/forms/GenerateInvoiceDialog'
 import { InvoicesModule } from '@/components/admin/InvoicesModule';
 import { PaymentsModule } from '@/components/finance/PaymentsModule';
 import { FinanceReportsModule } from '@/components/finance/FinanceReportsModule';
+import { DepositPenaltyModule } from '@/components/finance/DepositPenaltyModule';
+import { VendorCostModule } from '@/components/finance/VendorCostModule';
+import { ApprovalWorkflowModule } from '@/components/finance/ApprovalWorkflowModule';
 import { useToast } from '@/hooks/use-toast';
 
 const FinanceDashboard = () => {
@@ -31,7 +34,7 @@ const FinanceDashboard = () => {
   useEffect(() => {
     // Listen for finance tab change events from sidebar
     const handleFinanceTabChange = (event: any) => {
-      if (event.detail && ['overview', 'invoices', 'payments', 'reports'].includes(event.detail)) {
+      if (event.detail && ['overview', 'invoices', 'payments', 'deposits', 'vendor-costs', 'approvals', 'reports'].includes(event.detail)) {
         setActiveTab(event.detail);
       }
     };
@@ -56,12 +59,15 @@ const FinanceDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="invoices">Invoices</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
-          </TabsList>
+           <TabsList className="grid w-full grid-cols-7">
+             <TabsTrigger value="overview">Overview</TabsTrigger>
+             <TabsTrigger value="invoices">Invoices</TabsTrigger>
+             <TabsTrigger value="payments">Payments</TabsTrigger>
+             <TabsTrigger value="deposits">Deposits</TabsTrigger>
+             <TabsTrigger value="vendor-costs">Vendor Costs</TabsTrigger>
+             <TabsTrigger value="approvals">Approvals</TabsTrigger>
+             <TabsTrigger value="reports">Reports</TabsTrigger>
+           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -241,6 +247,18 @@ const FinanceDashboard = () => {
 
           <TabsContent value="payments">
             <PaymentsModule />
+          </TabsContent>
+
+          <TabsContent value="deposits">
+            <DepositPenaltyModule />
+          </TabsContent>
+
+          <TabsContent value="vendor-costs">
+            <VendorCostModule />
+          </TabsContent>
+
+          <TabsContent value="approvals">
+            <ApprovalWorkflowModule />
           </TabsContent>
 
           <TabsContent value="reports">

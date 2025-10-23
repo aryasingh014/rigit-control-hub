@@ -7,13 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, FileText } from 'lucide-react';
+import { Plus, Edit, Trash2, FileText, CheckCircle, XCircle, Calendar, AlertTriangle } from 'lucide-react';
 
 const contractsData = [
-  { id: 'RC-2025-001', customer: 'ABC Construction LLC', project: 'Downtown Tower', equipment: 'Scaffolding Set (Complete)', startDate: '2025-01-15', endDate: '2025-03-15', status: 'active', amount: 12500 },
-  { id: 'RC-2025-002', customer: 'XYZ Builders', project: 'Residential Complex', equipment: 'Safety Equipment Bundle', startDate: '2025-02-01', endDate: '2025-04-01', status: 'active', amount: 8900 },
-  { id: 'RC-2025-003', customer: 'Elite Construction', project: 'Office Building', equipment: 'Mobile Platforms (x3)', startDate: '2025-01-20', endDate: '2025-02-20', status: 'completed', amount: 15200 },
-  { id: 'RC-2025-004', customer: 'Modern Builders', project: 'Mall Extension', equipment: 'Formwork Panels', startDate: '2025-03-01', endDate: '2025-05-01', status: 'pending', amount: 6750 },
+  { id: 'RC-2025-001', customer: 'ABC Construction LLC', project: 'Downtown Tower', equipment: 'Scaffolding Set (Complete)', startDate: '2025-01-15', endDate: '2025-03-15', status: 'active', amount: 12500, renewalDate: '2025-03-10', approvalStatus: 'approved' },
+  { id: 'RC-2025-002', customer: 'XYZ Builders', project: 'Residential Complex', equipment: 'Safety Equipment Bundle', startDate: '2025-02-01', endDate: '2025-04-01', status: 'active', amount: 8900, renewalDate: '2025-03-25', approvalStatus: 'approved' },
+  { id: 'RC-2025-003', customer: 'Elite Construction', project: 'Office Building', equipment: 'Mobile Platforms (x3)', startDate: '2025-01-20', endDate: '2025-02-20', status: 'completed', amount: 15200, renewalDate: null, approvalStatus: 'approved' },
+  { id: 'RC-2025-004', customer: 'Modern Builders', project: 'Mall Extension', equipment: 'Formwork Panels', startDate: '2025-03-01', endDate: '2025-05-01', status: 'pending', amount: 6750, renewalDate: '2025-04-25', approvalStatus: 'pending' },
 ];
 
 export const ContractsModule = () => {
@@ -38,7 +38,9 @@ export const ContractsModule = () => {
       startDate: formData.startDate,
       endDate: formData.endDate,
       status: 'pending',
-      amount: parseInt(formData.amount)
+      amount: parseInt(formData.amount),
+      renewalDate: null,
+      approvalStatus: 'pending'
     };
     setContracts([...contracts, newContract]);
     toast({
@@ -83,20 +85,57 @@ export const ContractsModule = () => {
     return variants[status] || 'outline';
   };
 
+  const getApprovalBadgeVariant = (status: string) => {
+    const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+      approved: 'default',
+      pending: 'outline',
+      rejected: 'destructive',
+    };
+    return variants[status] || 'outline';
+  };
+
+  const handleApproveContract = (contract: any) => {
+    const updatedContract = { ...contract, approvalStatus: 'approved', status: 'active' };
+    setContracts(contracts.map(c => c.id === contract.id ? updatedContract : c));
+    toast({
+      title: 'Contract Approved',
+      description: `${contract.id} has been approved and activated.`,
+    });
+  };
+
+  const handleRejectContract = (contract: any) => {
+    const updatedContract = { ...contract, approvalStatus: 'rejected', status: 'cancelled' };
+    setContracts(contracts.map(c => c.id === contract.id ? updatedContract : c));
+    toast({
+      title: 'Contract Rejected',
+      description: `${contract.id} has been rejected.`,
+    });
+  };
+
+  const isRenewalDue = (renewalDate: string | null) => {
+    if (!renewalDate) return false;
+    const today = new Date();
+    const renewal = new Date(renewalDate);
+    const diffTime = renewal.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 30 && diffDays >= 0;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Contracts Management</h3>
-          <p className="text-sm text-muted-foreground">Manage rental contracts and agreements</p>
+          <h3 className="text-lg font-semibold">Contract Oversight</h3>
+          <p className="text-sm text-muted-foreground">Approve/reject contracts, monitor renewals, and track contract lifecycle</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Contract
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                New Contract
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Create New Contract</DialogTitle>
@@ -138,6 +177,7 @@ export const ContractsModule = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -211,7 +251,9 @@ export const ContractsModule = () => {
               <TableHead>Equipment</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>End Date</TableHead>
+              <TableHead>Renewal</TableHead>
               <TableHead>Amount</TableHead>
+              <TableHead>Approval</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -225,19 +267,48 @@ export const ContractsModule = () => {
                 <TableCell className="text-sm">{contract.equipment}</TableCell>
                 <TableCell className="text-sm">{contract.startDate}</TableCell>
                 <TableCell className="text-sm">{contract.endDate}</TableCell>
+                <TableCell>
+                  {contract.renewalDate ? (
+                    <div className="flex items-center gap-1">
+                      {isRenewalDue(contract.renewalDate) && <AlertTriangle className="h-3 w-3 text-orange-500" />}
+                      <span className={`text-sm ${isRenewalDue(contract.renewalDate) ? 'text-orange-600 font-medium' : ''}`}>
+                        {contract.renewalDate}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
                 <TableCell className="font-semibold">AED {contract.amount.toLocaleString()}</TableCell>
+                <TableCell>
+                  <Badge variant={getApprovalBadgeVariant(contract.approvalStatus)}>
+                    {contract.approvalStatus}
+                  </Badge>
+                </TableCell>
                 <TableCell>
                   <Badge variant={getStatusBadgeVariant(contract.status)}>
                     {contract.status}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEdit(contract)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(contract.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-1 justify-end">
+                    {contract.approvalStatus === 'pending' && (
+                      <>
+                        <Button variant="ghost" size="icon" title="Approve Contract" onClick={() => handleApproveContract(contract)}>
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button variant="ghost" size="icon" title="Reject Contract" onClick={() => handleRejectContract(contract)}>
+                          <XCircle className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </>
+                    )}
+                    <Button variant="ghost" size="icon" title="Edit Contract" onClick={() => handleEdit(contract)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" title="Delete Contract" onClick={() => handleDelete(contract.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

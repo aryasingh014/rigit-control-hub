@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 
 const customerData = [
-  { id: '1', name: 'ABC Construction LLC', email: 'info@abcconstruction.ae', phone: '+971-4-123-4567', crNumber: 'CR-12345', vatNumber: 'VAT-67890', creditLimit: 50000, depositAmount: 10000 },
-  { id: '2', name: 'Dubai Builders Co.', email: 'contact@dubaibuilders.ae', phone: '+971-4-234-5678', crNumber: 'CR-23456', vatNumber: 'VAT-78901', creditLimit: 75000, depositAmount: 15000 },
-  { id: '3', name: 'Emirates Projects Ltd', email: 'info@emiratesprojects.ae', phone: '+971-4-345-6789', crNumber: 'CR-34567', vatNumber: 'VAT-89012', creditLimit: 100000, depositAmount: 20000 },
+  { id: '1', name: 'ABC Construction LLC', email: 'info@abcconstruction.ae', phone: '+971-4-123-4567', crNumber: 'CR-12345', vatNumber: 'VAT-67890', creditLimit: 50000, depositAmount: 10000, approvalStatus: 'approved' },
+  { id: '2', name: 'Dubai Builders Co.', email: 'contact@dubaibuilders.ae', phone: '+971-4-234-5678', crNumber: 'CR-23456', vatNumber: 'VAT-78901', creditLimit: 75000, depositAmount: 15000, approvalStatus: 'approved' },
+  { id: '3', name: 'Emirates Projects Ltd', email: 'info@emiratesprojects.ae', phone: '+971-4-345-6789', crNumber: 'CR-34567', vatNumber: 'VAT-89012', creditLimit: 100000, depositAmount: 20000, approvalStatus: 'pending' },
 ];
 
 export const CustomerModule = () => {
@@ -35,7 +36,8 @@ export const CustomerModule = () => {
       crNumber: formData.crNumber,
       vatNumber: formData.vatNumber,
       creditLimit: parseInt(formData.creditLimit),
-      depositAmount: parseInt(formData.depositAmount)
+      depositAmount: parseInt(formData.depositAmount),
+      approvalStatus: 'pending'
     };
     setCustomers([...customers, newCustomer]);
     toast({
@@ -67,6 +69,23 @@ export const CustomerModule = () => {
     toast({
       title: 'Customer Deleted',
       description: `${name} has been removed.`,
+    });
+  };
+
+  const handleApproveCustomer = (customer: any) => {
+    const updatedCustomer = { ...customer, approvalStatus: 'approved' };
+    setCustomers(customers.map(c => c.id === customer.id ? updatedCustomer : c));
+    toast({
+      title: 'Customer Approved',
+      description: `${customer.name} has been approved for business operations.`,
+    });
+  };
+
+  const handleRejectCustomer = (customer: any) => {
+    setCustomers(customers.filter(c => c.id !== customer.id));
+    toast({
+      title: 'Customer Rejected',
+      description: `${customer.name} has been rejected and removed.`,
     });
   };
 
@@ -194,6 +213,7 @@ export const CustomerModule = () => {
               <TableHead>CR Number</TableHead>
               <TableHead>Credit Limit</TableHead>
               <TableHead>Deposit</TableHead>
+              <TableHead>Approval</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -206,13 +226,30 @@ export const CustomerModule = () => {
                 <TableCell>{customer.crNumber}</TableCell>
                 <TableCell>AED {customer.creditLimit.toLocaleString()}</TableCell>
                 <TableCell>AED {customer.depositAmount.toLocaleString()}</TableCell>
+                <TableCell>
+                  <Badge variant={customer.approvalStatus === 'approved' ? 'default' : 'outline'}>
+                    {customer.approvalStatus}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEdit(customer)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(customer.id, customer.name)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-1 justify-end">
+                    {customer.approvalStatus === 'pending' && (
+                      <>
+                        <Button variant="ghost" size="icon" title="Approve Customer" onClick={() => handleApproveCustomer(customer)}>
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button variant="ghost" size="icon" title="Reject Customer" onClick={() => handleRejectCustomer(customer)}>
+                          <XCircle className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </>
+                    )}
+                    <Button variant="ghost" size="icon" title="Edit Customer" onClick={() => handleEdit(customer)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" title="Delete Customer" onClick={() => handleDelete(customer.id, customer.name)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

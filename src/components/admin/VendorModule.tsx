@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 
 const vendorData = [
-  { id: '1', name: 'Steel Supplies LLC', email: 'sales@steelsupplies.ae', phone: '+971-4-111-2222', crNumber: 'CR-98765', tradeLicense: 'TL-11111', address: 'Industrial Area 1, Dubai' },
-  { id: '2', name: 'Aluminum Trading Co.', email: 'info@aluminumtrading.ae', phone: '+971-4-222-3333', crNumber: 'CR-87654', tradeLicense: 'TL-22222', address: 'Jebel Ali, Dubai' },
-  { id: '3', name: 'Safety Equipment LLC', email: 'contact@safetyequip.ae', phone: '+971-4-333-4444', crNumber: 'CR-76543', tradeLicense: 'TL-33333', address: 'Sharjah Industrial Area' },
+  { id: '1', name: 'Steel Supplies LLC', email: 'sales@steelsupplies.ae', phone: '+971-4-111-2222', crNumber: 'CR-98765', tradeLicense: 'TL-11111', address: 'Industrial Area 1, Dubai', approvalStatus: 'approved' },
+  { id: '2', name: 'Aluminum Trading Co.', email: 'info@aluminumtrading.ae', phone: '+971-4-222-3333', crNumber: 'CR-87654', tradeLicense: 'TL-22222', address: 'Jebel Ali, Dubai', approvalStatus: 'approved' },
+  { id: '3', name: 'Safety Equipment LLC', email: 'contact@safetyequip.ae', phone: '+971-4-333-4444', crNumber: 'CR-76543', tradeLicense: 'TL-33333', address: 'Sharjah Industrial Area', approvalStatus: 'pending' },
 ];
 
 export const VendorModule = () => {
@@ -54,6 +55,23 @@ export const VendorModule = () => {
     toast({
       title: 'Vendor Deleted',
       description: `${name} has been removed.`,
+    });
+  };
+
+  const handleApproveVendor = (vendor: any) => {
+    const updatedVendor = { ...vendor, approvalStatus: 'approved' };
+    setVendors(vendors.map(v => v.id === vendor.id ? updatedVendor : v));
+    toast({
+      title: 'Vendor Approved',
+      description: `${vendor.name} has been approved for business operations.`,
+    });
+  };
+
+  const handleRejectVendor = (vendor: any) => {
+    setVendors(vendors.filter(v => v.id !== vendor.id));
+    toast({
+      title: 'Vendor Rejected',
+      description: `${vendor.name} has been rejected and removed.`,
     });
   };
 
@@ -168,6 +186,7 @@ export const VendorModule = () => {
               <TableHead>Phone</TableHead>
               <TableHead>CR Number</TableHead>
               <TableHead>Trade License</TableHead>
+              <TableHead>Approval</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -179,13 +198,30 @@ export const VendorModule = () => {
                 <TableCell>{vendor.phone}</TableCell>
                 <TableCell>{vendor.crNumber}</TableCell>
                 <TableCell>{vendor.tradeLicense}</TableCell>
+                <TableCell>
+                  <Badge variant={vendor.approvalStatus === 'approved' ? 'default' : 'outline'}>
+                    {vendor.approvalStatus}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEdit(vendor)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(vendor.id, vendor.name)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-1 justify-end">
+                    {vendor.approvalStatus === 'pending' && (
+                      <>
+                        <Button variant="ghost" size="icon" title="Approve Vendor" onClick={() => handleApproveVendor(vendor)}>
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button variant="ghost" size="icon" title="Reject Vendor" onClick={() => handleRejectVendor(vendor)}>
+                          <XCircle className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </>
+                    )}
+                    <Button variant="ghost" size="icon" title="Edit Vendor" onClick={() => handleEdit(vendor)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" title="Delete Vendor" onClick={() => handleDelete(vendor.id, vendor.name)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

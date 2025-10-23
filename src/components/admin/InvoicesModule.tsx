@@ -7,13 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Download, FileText } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, FileText, Send, CreditCard } from 'lucide-react';
 
 const invoicesData = [
-  { id: 'INV-2025-001', contractId: 'RC-2025-001', customer: 'ABC Construction LLC', date: '2025-01-15', amount: 11905, vat: 595, total: 12500, status: 'paid', dueDate: '2025-01-30' },
-  { id: 'INV-2025-002', contractId: 'RC-2025-002', customer: 'XYZ Builders', date: '2025-02-01', amount: 8476, vat: 424, total: 8900, status: 'pending', dueDate: '2025-02-15' },
-  { id: 'INV-2025-003', contractId: 'RC-2025-003', customer: 'Elite Construction', date: '2025-01-20', amount: 14476, vat: 724, total: 15200, status: 'overdue', dueDate: '2025-02-04' },
-  { id: 'INV-2025-004', contractId: 'RC-2025-004', customer: 'Modern Builders', date: '2025-03-01', amount: 6429, vat: 321, total: 6750, status: 'paid', dueDate: '2025-03-15' },
+  { id: 'INV-2025-001', contractId: 'RC-2025-001', customer: 'ABC Construction LLC', date: '2025-01-15', amount: 11905, vat: 595, total: 12500, status: 'paid', dueDate: '2025-01-30', currency: 'AED', vatRate: 5 },
+  { id: 'INV-2025-002', contractId: 'RC-2025-002', customer: 'XYZ Builders', date: '2025-02-01', amount: 8476, vat: 424, total: 8900, status: 'pending', dueDate: '2025-02-15', currency: 'AED', vatRate: 5 },
+  { id: 'INV-2025-003', contractId: 'RC-2025-003', customer: 'Elite Construction', date: '2025-01-20', amount: 14476, vat: 724, total: 15200, status: 'overdue', dueDate: '2025-02-04', currency: 'USD', vatRate: 0 },
+  { id: 'INV-2025-004', contractId: 'RC-2025-004', customer: 'Modern Builders', date: '2025-03-01', amount: 6429, vat: 321, total: 6750, status: 'paid', dueDate: '2025-03-15', currency: 'AED', vatRate: 5 },
 ];
 
 export const InvoicesModule = () => {
@@ -23,13 +23,14 @@ export const InvoicesModule = () => {
   const [editingInvoice, setEditingInvoice] = useState<any>(null);
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    contractId: '', customer: '', amount: '', vatRate: '5', dueDate: ''
+    contractId: '', customer: '', amount: '', currency: 'AED', vatRate: '5', dueDate: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const amount = parseFloat(formData.amount);
-    const vat = amount * (parseFloat(formData.vatRate) / 100);
+    const vatRate = parseFloat(formData.vatRate);
+    const vat = formData.currency === 'AED' ? amount * (vatRate / 100) : 0; // VAT only for AED
     const total = amount + vat;
     // Here you would typically save to database
     console.log('Creating invoice:', { ...formData, vat, total });
@@ -42,7 +43,9 @@ export const InvoicesModule = () => {
       vat: vat,
       total: total,
       status: 'pending',
-      dueDate: formData.dueDate
+      dueDate: formData.dueDate,
+      currency: formData.currency,
+      vatRate: vatRate
     };
     setInvoices([...invoices, newInvoice]);
     toast({
@@ -50,7 +53,7 @@ export const InvoicesModule = () => {
       description: `Invoice for ${formData.customer} has been created successfully.`,
     });
     setOpen(false);
-    setFormData({ contractId: '', customer: '', amount: '', vatRate: '5', dueDate: '' });
+    setFormData({ contractId: '', customer: '', amount: '', currency: 'AED', vatRate: '5', dueDate: '' });
   };
 
   const handleEdit = (invoice: any) => {
@@ -81,6 +84,20 @@ export const InvoicesModule = () => {
     toast({
       title: 'Download Started',
       description: `Downloading PDF for ${id}`,
+    });
+  };
+
+  const handleSendInvoice = (id: string) => {
+    toast({
+      title: 'Invoice Sent',
+      description: `Invoice ${id} has been sent to customer.`,
+    });
+  };
+
+  const handleRecordPayment = (id: string) => {
+    toast({
+      title: 'Payment Recorded',
+      description: `Payment for invoice ${id} has been recorded.`,
     });
   };
 
@@ -124,14 +141,27 @@ export const InvoicesModule = () => {
                   <Input id="customer" value={formData.customer} onChange={(e) => setFormData({ ...formData, customer: e.target.value })} required />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Amount (AED)</Label>
+                  <Label htmlFor="amount">Amount</Label>
                   <Input id="amount" type="number" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="currency">Currency</Label>
+                  <Select value={formData.currency} onValueChange={(val) => setFormData({ ...formData, currency: val, vatRate: val === 'AED' ? '5' : '0' })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="AED">AED</SelectItem>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="EURO">EURO</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="vatRate">VAT Rate (%)</Label>
-                  <Input id="vatRate" type="number" value={formData.vatRate} onChange={(e) => setFormData({ ...formData, vatRate: e.target.value })} required />
+                  <Input id="vatRate" type="number" value={formData.vatRate} onChange={(e) => setFormData({ ...formData, vatRate: e.target.value })} required disabled={formData.currency !== 'AED'} />
                 </div>
               </div>
               <div className="space-y-2">
@@ -140,7 +170,7 @@ export const InvoicesModule = () => {
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button type="submit">Create Invoice</Button>
+                <Button type="submit">Generate Invoice</Button>
               </div>
             </form>
           </DialogContent>
@@ -213,6 +243,7 @@ export const InvoicesModule = () => {
               <TableHead>Customer</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Amount</TableHead>
+              <TableHead>Currency</TableHead>
               <TableHead>VAT</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Due Date</TableHead>
@@ -227,9 +258,10 @@ export const InvoicesModule = () => {
                 <TableCell>{invoice.contractId}</TableCell>
                 <TableCell>{invoice.customer}</TableCell>
                 <TableCell className="text-sm">{invoice.date}</TableCell>
-                <TableCell>AED {invoice.amount.toLocaleString()}</TableCell>
-                <TableCell className="text-muted-foreground">AED {invoice.vat}</TableCell>
-                <TableCell className="font-semibold">AED {invoice.total.toLocaleString()}</TableCell>
+                <TableCell>{invoice.currency} {invoice.amount.toLocaleString()}</TableCell>
+                <TableCell className="text-muted-foreground">{invoice.currency}</TableCell>
+                <TableCell className="text-muted-foreground">{invoice.currency} {invoice.vat}</TableCell>
+                <TableCell className="font-semibold">{invoice.currency} {invoice.total.toLocaleString()}</TableCell>
                 <TableCell className="text-sm">{invoice.dueDate}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusBadgeVariant(invoice.status)}>
@@ -237,6 +269,12 @@ export const InvoicesModule = () => {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
+                  <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleSendInvoice(invoice.id)}>
+                    <Send className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleRecordPayment(invoice.id)}>
+                    <CreditCard className="h-4 w-4" />
+                  </Button>
                   <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleDownload(invoice.id)}>
                     <Download className="h-4 w-4" />
                   </Button>

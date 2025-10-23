@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
+import { Plus, FileText, CheckCircle } from 'lucide-react';
 
 export const CreateContractDialog = () => {
   const [open, setOpen] = useState(false);
@@ -17,6 +18,10 @@ export const CreateContractDialog = () => {
     startDate: '',
     endDate: '',
     equipment: '',
+    depositAmount: '',
+    monthlyRate: '',
+    terms: '',
+    specialConditions: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -28,7 +33,18 @@ export const CreateContractDialog = () => {
       description: `Contract for ${formData.customer} has been created successfully.`,
     });
     setOpen(false);
-    setFormData({ customer: '', project: '', location: '', startDate: '', endDate: '', equipment: '' });
+    setFormData({
+      customer: '',
+      project: '',
+      location: '',
+      startDate: '',
+      endDate: '',
+      equipment: '',
+      depositAmount: '',
+      monthlyRate: '',
+      terms: '',
+      specialConditions: ''
+    });
   };
 
   return (
@@ -119,11 +135,70 @@ export const CreateContractDialog = () => {
             </Select>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit">Create Contract</Button>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="depositAmount">Deposit Amount (AED)</Label>
+              <Input
+                id="depositAmount"
+                type="number"
+                value={formData.depositAmount}
+                onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })}
+                placeholder="5000"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="monthlyRate">Monthly Rate (AED)</Label>
+              <Input
+                id="monthlyRate"
+                type="number"
+                value={formData.monthlyRate}
+                onChange={(e) => setFormData({ ...formData, monthlyRate: e.target.value })}
+                placeholder="2500"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="terms">Contract Terms</Label>
+            <Textarea
+              id="terms"
+              value={formData.terms}
+              onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
+              placeholder="Standard rental terms and conditions..."
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="specialConditions">Special Conditions</Label>
+            <Textarea
+              id="specialConditions"
+              value={formData.specialConditions}
+              onChange={(e) => setFormData({ ...formData, specialConditions: e.target.value })}
+              placeholder="Any special conditions or requirements..."
+              rows={2}
+            />
+          </div>
+
+          <div className="flex justify-between pt-4">
+            <div className="flex gap-2">
+              <Button type="button" variant="outline">
+                <FileText className="mr-2 h-4 w-4" />
+                Generate Draft
+              </Button>
+              <Button type="button" variant="outline">
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Send for Approval
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Create Contract</Button>
+            </div>
           </div>
         </form>
       </DialogContent>

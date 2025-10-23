@@ -38,35 +38,44 @@ interface DashboardLayoutProps {
 const roleMenuItems = {
   admin: [
     { title: 'Overview', icon: LayoutDashboard, path: '/admin', tab: 'overview' },
-    { title: 'Equipment Catalog', icon: Package, path: '/admin', tab: 'equipment' },
+    { title: 'Users & Roles', icon: Users, path: '/admin', tab: 'users' },
+    { title: 'Master Data', icon: Settings, path: '/admin', tab: 'masterdata' },
+    { title: 'Contract Oversight', icon: FileText, path: '/admin', tab: 'contracts' },
+    { title: 'Inventory', icon: Package, path: '/admin', tab: 'inventory' },
+    { title: 'Finance', icon: DollarSign, path: '/admin', tab: 'finance' },
+    { title: 'Equipment', icon: Package, path: '/admin', tab: 'equipment' },
     { title: 'Customers', icon: Users, path: '/admin', tab: 'customers' },
     { title: 'Vendors', icon: Truck, path: '/admin', tab: 'vendors' },
-    { title: 'Users & Roles', icon: Users, path: '/admin', tab: 'users' },
-    { title: 'Contracts', icon: FileText, path: '/admin', tab: 'contracts' },
     { title: 'Invoices', icon: DollarSign, path: '/admin', tab: 'invoices' },
     { title: 'Work Orders', icon: FileText, path: '/admin', tab: 'workorders' },
     { title: 'Dispatch', icon: Truck, path: '/admin', tab: 'dispatch' },
-    { title: 'Reports', icon: FileText, path: '/admin', tab: 'reports' },
+    { title: 'Reports', icon: BarChart3, path: '/admin', tab: 'reports' },
     { title: 'Settings', icon: Settings, path: '/admin', tab: 'settings' },
   ],
   sales: [
     { title: 'Overview', icon: LayoutDashboard, path: '/sales' },
-    { title: 'Contracts', icon: FileText, path: '/sales/contracts' },
+    { title: 'Enquiries', icon: Users, path: '/sales/enquiries' },
     { title: 'Quotations', icon: FileText, path: '/sales/quotations' },
+    { title: 'Sales Orders', icon: Package, path: '/sales/sales-orders' },
+    { title: 'Contracts', icon: FileText, path: '/sales/contracts' },
     { title: 'Customers', icon: Users, path: '/sales/customers' },
-    { title: 'Reports', icon: FileText, path: '/sales/reports' },
+    { title: 'Communication', icon: Building2, path: '/sales/communication' },
+    { title: 'Reports', icon: BarChart3, path: '/sales/reports' },
   ],
   warehouse: [
     { title: 'Overview', icon: LayoutDashboard, path: '/warehouse', tab: 'overview' },
+    { title: 'Stock', icon: Package, path: '/warehouse', tab: 'stock' },
     { title: 'Dispatch', icon: Truck, path: '/warehouse', tab: 'dispatch' },
     { title: 'Returns', icon: Package, path: '/warehouse', tab: 'returns' },
-    { title: 'Stock', icon: Package, path: '/warehouse', tab: 'stock' },
     { title: 'Reports', icon: FileText, path: '/warehouse', tab: 'reports' },
   ],
   finance: [
     { title: 'Overview', icon: LayoutDashboard, path: '/finance', tab: 'overview' },
     { title: 'Invoices', icon: FileText, path: '/finance', tab: 'invoices' },
     { title: 'Payments', icon: DollarSign, path: '/finance', tab: 'payments' },
+    { title: 'Deposits', icon: DollarSign, path: '/finance', tab: 'deposits' },
+    { title: 'Vendor Costs', icon: Truck, path: '/finance', tab: 'vendor-costs' },
+    { title: 'Approvals', icon: FileText, path: '/finance', tab: 'approvals' },
     { title: 'Reports', icon: BarChart3, path: '/finance', tab: 'reports' },
   ],
   vendor: [
@@ -74,11 +83,15 @@ const roleMenuItems = {
     { title: 'Work Orders', icon: FileText, path: '/vendor', tab: 'workorders' },
     { title: 'Invoices', icon: DollarSign, path: '/vendor', tab: 'invoices' },
     { title: 'Payments', icon: DollarSign, path: '/vendor', tab: 'payments' },
+    { title: 'Profile', icon: Users, path: '/vendor', tab: 'profile' },
   ],
   customer: [
     { title: 'Overview', icon: LayoutDashboard, path: '/customer', tab: 'overview' },
-    { title: 'Rentals', icon: Package, path: '/customer', tab: 'rentals' },
-    { title: 'Invoices', icon: DollarSign, path: '/customer', tab: 'invoices' },
+    { title: 'My Rentals', icon: Package, path: '/customer', tab: 'rentals' },
+    { title: 'Invoices & Payments', icon: DollarSign, path: '/customer', tab: 'invoices' },
+    { title: 'Return Requests', icon: FileText, path: '/customer', tab: 'returns' },
+    { title: 'Support & Communication', icon: Users, path: '/customer', tab: 'support' },
+    { title: 'Reports', icon: BarChart3, path: '/customer', tab: 'reports' },
     { title: 'Profile', icon: Users, path: '/customer', tab: 'profile' },
   ],
 };
@@ -104,7 +117,7 @@ const AppSidebar = ({ role }: { role: string }) => {
       // For sales, navigate to the specific path and set the tab based on the path
       navigate(item.path);
       const tabName = item.path.split('/').pop();
-      if (tabName && ['contracts', 'quotations', 'customers', 'reports'].includes(tabName)) {
+      if (tabName && ['enquiries', 'quotations', 'sales-orders', 'contracts', 'customers', 'communication', 'reports'].includes(tabName)) {
         // Trigger tab change for sales dashboard
         window.dispatchEvent(new CustomEvent('salesTabChange', { detail: tabName }));
       }

@@ -16,6 +16,9 @@ import { ContractsModule } from '@/components/admin/ContractsModule';
 import { InvoicesModule } from '@/components/admin/InvoicesModule';
 import { WorkOrdersModule } from '@/components/admin/WorkOrdersModule';
 import { DispatchModule } from '@/components/admin/DispatchModule';
+import { MasterDataModule } from '@/components/admin/MasterDataModule';
+import { InventoryModule } from '@/components/admin/InventoryModule';
+import { FinanceModule } from '@/components/admin/FinanceModule';
 
 const StatCard = ({ title, value, icon: Icon, trend }: any) => (
   <Card>
@@ -42,13 +45,13 @@ const AdminDashboard = () => {
   useEffect(() => {
     // Check for hash in URL to set active tab
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['overview', 'equipment', 'customers', 'vendors', 'users', 'contracts', 'invoices', 'workorders', 'dispatch', 'reports', 'settings'].includes(hash)) {
+    if (hash && ['overview', 'equipment', 'customers', 'vendors', 'users', 'masterdata', 'contracts', 'inventory', 'finance', 'invoices', 'workorders', 'dispatch', 'reports'].includes(hash)) {
       setActiveTab(hash);
     }
 
     // Listen for custom tab change events from sidebar
     const handleTabChange = (event: any) => {
-      if (event.detail && ['overview', 'equipment', 'customers', 'vendors', 'users', 'contracts', 'invoices', 'workorders', 'dispatch', 'reports', 'settings'].includes(event.detail)) {
+      if (event.detail && ['overview', 'equipment', 'customers', 'vendors', 'users', 'masterdata', 'contracts', 'inventory', 'finance', 'invoices', 'workorders', 'dispatch', 'reports'].includes(event.detail)) {
         setActiveTab(event.detail);
       }
     };
@@ -94,19 +97,25 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-           <TabsList className="grid w-full grid-cols-11">
-             <TabsTrigger value="overview">Overview</TabsTrigger>
-             <TabsTrigger value="equipment">Equipment</TabsTrigger>
-             <TabsTrigger value="customers">Customers</TabsTrigger>
-             <TabsTrigger value="vendors">Vendors</TabsTrigger>
-             <TabsTrigger value="users">Users</TabsTrigger>
-             <TabsTrigger value="contracts">Contracts</TabsTrigger>
-             <TabsTrigger value="invoices">Invoices</TabsTrigger>
-             <TabsTrigger value="workorders">Work Orders</TabsTrigger>
-             <TabsTrigger value="dispatch">Dispatch</TabsTrigger>
-             <TabsTrigger value="reports">Reports</TabsTrigger>
-             <TabsTrigger value="settings">Settings</TabsTrigger>
-           </TabsList>
+            <div className="border-b">
+              <div className="flex flex-wrap gap-1 pb-2">
+                <TabsList className="h-auto p-1 bg-transparent">
+                  <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Overview</TabsTrigger>
+                  <TabsTrigger value="users" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Users & Roles</TabsTrigger>
+                  <TabsTrigger value="masterdata" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Master Data</TabsTrigger>
+                  <TabsTrigger value="contracts" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Contract Oversight</TabsTrigger>
+                  <TabsTrigger value="inventory" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Inventory</TabsTrigger>
+                  <TabsTrigger value="finance" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Finance</TabsTrigger>
+                  <TabsTrigger value="equipment" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Equipment</TabsTrigger>
+                  <TabsTrigger value="customers" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Customers</TabsTrigger>
+                  <TabsTrigger value="vendors" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Vendors</TabsTrigger>
+                  <TabsTrigger value="invoices" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Invoices</TabsTrigger>
+                  <TabsTrigger value="workorders" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Work Orders</TabsTrigger>
+                  <TabsTrigger value="dispatch" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Dispatch</TabsTrigger>
+                  <TabsTrigger value="reports" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Reports</TabsTrigger>
+                </TabsList>
+              </div>
+            </div>
 
           <TabsContent value="overview" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -214,16 +223,20 @@ const AdminDashboard = () => {
             <UsersRolesModule />
           </TabsContent>
 
-          <TabsContent value="reports">
-            <ReportsModule />
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <SettingsModule />
+          <TabsContent value="masterdata">
+            <MasterDataModule />
           </TabsContent>
 
           <TabsContent value="contracts">
             <ContractsModule />
+          </TabsContent>
+
+          <TabsContent value="inventory">
+            <InventoryModule />
+          </TabsContent>
+
+          <TabsContent value="finance">
+            <FinanceModule />
           </TabsContent>
 
           <TabsContent value="invoices">
@@ -236,6 +249,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="dispatch">
             <DispatchModule />
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <ReportsModule />
           </TabsContent>
         </Tabs>
       </div>

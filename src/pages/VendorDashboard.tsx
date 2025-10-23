@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { VendorProfileModule } from '@/components/vendor/VendorProfileModule';
 import { VendorWorkOrdersModule } from '@/components/vendor/VendorWorkOrdersModule';
 import { VendorInvoicesModule } from '@/components/vendor/VendorInvoicesModule';
 import { VendorPaymentsModule } from '@/components/vendor/VendorPaymentsModule';
@@ -20,13 +21,13 @@ const VendorDashboard = () => {
   useEffect(() => {
     // Check for hash in URL to set active tab
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['overview', 'workorders', 'invoices', 'payments'].includes(hash)) {
+    if (hash && ['overview', 'profile', 'workorders', 'invoices', 'payments'].includes(hash)) {
       setActiveTab(hash);
     }
 
     // Listen for custom tab change events from sidebar
     const handleTabChange = (event: any) => {
-      if (event.detail && ['overview', 'workorders', 'invoices', 'payments'].includes(event.detail)) {
+      if (event.detail && ['overview', 'profile', 'workorders', 'invoices', 'payments'].includes(event.detail)) {
         setActiveTab(event.detail);
       }
     };
@@ -34,7 +35,7 @@ const VendorDashboard = () => {
     // Listen for hash changes
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      if (hash && ['overview', 'workorders', 'invoices', 'payments'].includes(hash)) {
+      if (hash && ['overview', 'profile', 'workorders', 'invoices', 'payments'].includes(hash)) {
         setActiveTab(hash);
       }
     };
@@ -69,11 +70,12 @@ const VendorDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="workorders">Work Orders</TabsTrigger>
             <TabsTrigger value="invoices">Invoices</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -197,6 +199,10 @@ const VendorDashboard = () => {
 
           <TabsContent value="payments">
             <VendorPaymentsModule />
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <VendorProfileModule />
           </TabsContent>
         </Tabs>
       </div>

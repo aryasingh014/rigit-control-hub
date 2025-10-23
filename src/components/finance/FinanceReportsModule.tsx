@@ -196,10 +196,10 @@ export const FinanceReportsModule = () => {
               </CardContent>
             </Card>
 
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleDownloadReport('Tax Report')}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleDownloadReport('VAT Reports')}>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Tax Report</CardTitle>
-                <CardDescription>VAT and tax calculations</CardDescription>
+                <CardTitle className="text-base">VAT Reports</CardTitle>
+                <CardDescription>VAT calculations and summaries</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" className="w-full">
@@ -209,10 +209,49 @@ export const FinanceReportsModule = () => {
               </CardContent>
             </Card>
 
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleDownloadReport('Revenue, Profit & Cost Center Summary')}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Revenue & Profit Summary</CardTitle>
+                <CardDescription>Revenue, profit, and cost center analysis</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Excel
+                </Button>
+              </CardContent>
+            </Card>
+
             <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleDownloadReport('Customer Payment History')}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Payment History</CardTitle>
                 <CardDescription>Customer payment records</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Excel
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleDownloadReport('Deposit & Penalty Report')}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Deposit & Penalty Report</CardTitle>
+                <CardDescription>Deposit tracking and penalty summaries</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleDownloadReport('Vendor Cost Analysis')}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Vendor Cost Analysis</CardTitle>
+                <CardDescription>Vendor costs and margin comparisons</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" className="w-full">

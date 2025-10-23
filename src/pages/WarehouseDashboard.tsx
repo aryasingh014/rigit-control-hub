@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DispatchEquipmentDialog } from '@/components/forms/DispatchEquipmentDialog';
+import { AddRemoveEquipmentDialog } from '@/components/forms/AddRemoveEquipmentDialog';
 import { useToast } from '@/hooks/use-toast';
 
 const WarehouseDashboard = () => {
@@ -55,9 +56,9 @@ const WarehouseDashboard = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="stock">Stock</TabsTrigger>
             <TabsTrigger value="dispatch">Dispatch</TabsTrigger>
             <TabsTrigger value="returns">Returns</TabsTrigger>
-            <TabsTrigger value="stock">Stock</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>
           </TabsList>
 
@@ -247,8 +248,8 @@ const WarehouseDashboard = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Dispatch Management</CardTitle>
-                    <CardDescription>Manage equipment dispatch and delivery</CardDescription>
+                    <CardTitle>Delivery Management</CardTitle>
+                    <CardDescription>Generate Delivery Orders for approved contracts</CardDescription>
                   </div>
                   <DispatchEquipmentDialog />
                 </div>
@@ -262,15 +263,16 @@ const WarehouseDashboard = () => {
                       <TableHead>Items</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Delivery Date</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {[
-                      { contract: 'RC-2025-078', customer: 'ABC Construction', items: 15, priority: 'high', status: 'ready' },
-                      { contract: 'RC-2025-079', customer: 'XYZ Builders', items: 8, priority: 'normal', status: 'ready' },
-                      { contract: 'RC-2025-080', customer: 'Elite Construction', items: 22, priority: 'high', status: 'ready' },
-                      { contract: 'RC-2025-081', customer: 'Modern Builders', items: 12, priority: 'normal', status: 'ready' },
+                      { contract: 'RC-2025-078', customer: 'ABC Construction', items: 15, priority: 'high', status: 'ready', deliveryDate: null },
+                      { contract: 'RC-2025-079', customer: 'XYZ Builders', items: 8, priority: 'normal', status: 'ready', deliveryDate: null },
+                      { contract: 'RC-2025-080', customer: 'Elite Construction', items: 22, priority: 'high', status: 'ready', deliveryDate: null },
+                      { contract: 'RC-2025-081', customer: 'Modern Builders', items: 12, priority: 'normal', status: 'ready', deliveryDate: null },
                     ].map((dispatch) => (
                       <TableRow key={dispatch.contract}>
                         <TableCell className="font-medium">{dispatch.contract}</TableCell>
@@ -287,20 +289,30 @@ const WarehouseDashboard = () => {
                           <Badge variant="default">{dispatch.status}</Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
+                          {dispatch.deliveryDate ? dispatch.deliveryDate : 'Not set'}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1 flex-wrap">
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => toast({ title: 'Dispatch Started', description: `Starting dispatch for ${dispatch.contract}` })}
+                              onClick={() => toast({ title: 'DO Generated', description: `Delivery Order generated for ${dispatch.contract}` })}
                             >
-                              Start
+                              Create DO
                             </Button>
                             <Button
                               size="sm"
-                              variant="default"
-                              onClick={() => toast({ title: 'Dispatch Completed', description: `Completed dispatch for ${dispatch.contract}` })}
+                              variant="outline"
+                              onClick={() => toast({ title: 'Delivery Marked', description: `Delivery date marked for ${dispatch.contract}, rent started` })}
                             >
-                              Complete
+                              Mark Delivered
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => toast({ title: 'DO Printed', description: `Delivery Order printed for ${dispatch.contract}` })}
+                            >
+                              Print DO
                             </Button>
                           </div>
                         </TableCell>
@@ -315,8 +327,8 @@ const WarehouseDashboard = () => {
           <TabsContent value="returns">
             <Card>
               <CardHeader>
-                <CardTitle>Equipment Returns</CardTitle>
-                <CardDescription>Track and manage equipment returns</CardDescription>
+                <CardTitle>Return Management</CardTitle>
+                <CardDescription>Early Return Notes, Inspection Notes, and Damage Recording</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -327,15 +339,16 @@ const WarehouseDashboard = () => {
                       <TableHead>Return Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Items</TableHead>
+                      <TableHead>Missing/Damaged</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {[
-                      { contract: 'RC-2025-045', customer: 'ABC Construction', returnDate: 'Oct 25, 2025', status: 'on_time', items: 12 },
-                      { contract: 'RC-2025-038', customer: 'Urban Developers', returnDate: 'Oct 23, 2025', status: 'overdue', items: 8 },
-                      { contract: 'RC-2025-052', customer: 'Prime Construction', returnDate: 'Oct 27, 2025', status: 'on_time', items: 15 },
-                      { contract: 'RC-2025-048', customer: 'New Project LLC', returnDate: 'Oct 24, 2025', status: 'confirmed', items: 6 },
+                      { contract: 'RC-2025-045', customer: 'ABC Construction', returnDate: 'Oct 25, 2025', status: 'on_time', items: 12, missingDamaged: 0 },
+                      { contract: 'RC-2025-038', customer: 'Urban Developers', returnDate: 'Oct 23, 2025', status: 'overdue', items: 8, missingDamaged: 2 },
+                      { contract: 'RC-2025-052', customer: 'Prime Construction', returnDate: 'Oct 27, 2025', status: 'on_time', items: 15, missingDamaged: 1 },
+                      { contract: 'RC-2025-048', customer: 'New Project LLC', returnDate: 'Oct 24, 2025', status: 'confirmed', items: 6, missingDamaged: 0 },
                     ].map((returns) => (
                       <TableRow key={returns.contract}>
                         <TableCell className="font-medium">{returns.contract}</TableCell>
@@ -350,20 +363,41 @@ const WarehouseDashboard = () => {
                           <Badge variant="outline">{returns.items} items</Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
+                          {returns.missingDamaged > 0 ? (
+                            <Badge variant="destructive">{returns.missingDamaged} items</Badge>
+                          ) : (
+                            <Badge variant="secondary">None</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1 flex-wrap">
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => toast({ title: 'Return Processed', description: `Processing return for ${returns.contract}` })}
+                              onClick={() => toast({ title: 'Early Return Note', description: `Early return note created for ${returns.contract}` })}
                             >
-                              Process
+                              Add Return
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => toast({ title: 'Inspection Note', description: `Return inspection note created for ${returns.contract}` })}
+                            >
+                              Inspect
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => toast({ title: 'Damage Recorded', description: `Missing/damaged items recorded for ${returns.contract}` })}
+                            >
+                              Record Damage
                             </Button>
                             <Button
                               size="sm"
                               variant="default"
-                              onClick={() => toast({ title: 'Return Completed', description: `Completed return for ${returns.contract}` })}
+                              onClick={() => toast({ title: 'Return Approved', description: `Return approved for ${returns.contract}` })}
                             >
-                              Complete
+                              Approve Return
                             </Button>
                           </div>
                         </TableCell>
@@ -378,8 +412,13 @@ const WarehouseDashboard = () => {
           <TabsContent value="stock">
             <Card>
               <CardHeader>
-                <CardTitle>Stock Management</CardTitle>
-                <CardDescription>Monitor and manage inventory levels</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Inventory Control</CardTitle>
+                    <CardDescription>Item Master View with real-time stock status</CardDescription>
+                  </div>
+                  {role === 'warehouse' || role === 'admin' ? <AddRemoveEquipmentDialog /> : null}
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -388,6 +427,8 @@ const WarehouseDashboard = () => {
                       <TableHead>Item Code</TableHead>
                       <TableHead>Description</TableHead>
                       <TableHead>Available</TableHead>
+                      <TableHead>Reserved</TableHead>
+                      <TableHead>Under Maintenance</TableHead>
                       <TableHead>On Rent</TableHead>
                       <TableHead>Total</TableHead>
                       <TableHead>Utilization</TableHead>
@@ -397,11 +438,11 @@ const WarehouseDashboard = () => {
                   </TableHeader>
                   <TableBody>
                     {[
-                      { code: 'ST-6M', item: 'Scaffolding Tubes (6m)', available: 245, onRent: 180, total: 425, status: 'good' },
-                      { code: 'BP-STD', item: 'Base Plates', available: 89, onRent: 156, total: 245, status: 'good' },
-                      { code: 'CP-SW', item: 'Couplers (Swivel)', available: 34, onRent: 289, total: 323, status: 'low' },
-                      { code: 'SH-PRO', item: 'Safety Harness', available: 12, onRent: 45, total: 57, status: 'critical' },
-                      { code: 'PL-8M', item: 'Planks (8m)', available: 156, onRent: 234, total: 390, status: 'good' },
+                      { code: 'ST-6M', item: 'Scaffolding Tubes (6m)', available: 245, reserved: 10, underMaintenance: 5, onRent: 180, total: 440, status: 'good' },
+                      { code: 'BP-STD', item: 'Base Plates', available: 89, reserved: 5, underMaintenance: 3, onRent: 156, total: 253, status: 'good' },
+                      { code: 'CP-SW', item: 'Couplers (Swivel)', available: 34, reserved: 5, underMaintenance: 2, onRent: 289, total: 330, status: 'low' },
+                      { code: 'SH-PRO', item: 'Safety Harness', available: 12, reserved: 3, underMaintenance: 1, onRent: 45, total: 61, status: 'critical' },
+                      { code: 'PL-8M', item: 'Planks (8m)', available: 156, reserved: 8, underMaintenance: 4, onRent: 234, total: 402, status: 'good' },
                     ].map((item) => {
                       const utilization = Math.round((item.onRent / item.total) * 100);
                       return (
@@ -409,6 +450,8 @@ const WarehouseDashboard = () => {
                           <TableCell className="font-medium">{item.code}</TableCell>
                           <TableCell>{item.item}</TableCell>
                           <TableCell className="text-success font-semibold">{item.available}</TableCell>
+                          <TableCell className="text-warning font-semibold">{item.reserved}</TableCell>
+                          <TableCell className="text-muted-foreground font-semibold">{item.underMaintenance}</TableCell>
                           <TableCell className="text-primary font-semibold">{item.onRent}</TableCell>
                           <TableCell>{item.total}</TableCell>
                           <TableCell>
@@ -425,19 +468,52 @@ const WarehouseDashboard = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => toast({ title: 'Stock Updated', description: `Updated stock for ${item.code}` })}
-                            >
-                              Update
-                            </Button>
+                            <div className="flex gap-1 flex-wrap">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => toast({ title: 'View Stock', description: `Viewing stock for ${item.code}` })}
+                              >
+                                View Stock
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => toast({ title: 'Update Quantity', description: `Updating quantity for ${item.code}` })}
+                              >
+                                Update Quantity
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => toast({ title: 'Add Adjustment', description: `Adding adjustment for ${item.code}` })}
+                              >
+                                Add Adjustment
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
                     })}
                   </TableBody>
                 </Table>
+                <div className="mt-4">
+                  <h4 className="text-md font-semibold mb-2">Stock Adjustment & Audit</h4>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => toast({ title: 'Adjustment Added', description: 'Stock adjustment added and auto-updated after inspection' })}
+                    >
+                      Add Adjustment
+                    </Button>
+                    <Button
+                      variant="default"
+                      onClick={() => toast({ title: 'Sent for Review', description: 'Adjustment sent for finance review' })}
+                    >
+                      Send for Finance Review
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -446,23 +522,13 @@ const WarehouseDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Warehouse Reports</CardTitle>
-                <CardDescription>Analytics and insights for warehouse operations</CardDescription>
+                <CardDescription>Stock utilization and damaged/missing item summaries</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Monthly Dispatches</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">156</div>
-                      <p className="text-xs text-muted-foreground">+12% from last month</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Equipment Utilization</CardTitle>
+                      <CardTitle className="text-base">Stock Utilization</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">78%</div>
@@ -472,23 +538,76 @@ const WarehouseDashboard = () => {
 
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Return Rate</CardTitle>
+                      <CardTitle className="text-base">Damaged Items</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">94%</div>
-                      <p className="text-xs text-muted-foreground">On-time returns</p>
+                      <div className="text-2xl font-bold text-destructive">12</div>
+                      <p className="text-xs text-muted-foreground">Items requiring repair</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Missing Items</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-warning">5</div>
+                      <p className="text-xs text-muted-foreground">Items not returned</p>
                     </CardContent>
                   </Card>
                 </div>
 
                 <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-4">Performance Trends</h3>
-                  <div className="h-64 flex items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg">
-                    <div className="text-center">
-                      <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-muted-foreground">Warehouse performance chart will be displayed here</p>
-                    </div>
-                  </div>
+                  <h3 className="text-lg font-semibold mb-4">Damaged/Missing Item Summary</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item Code</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Damaged</TableHead>
+                        <TableHead>Missing</TableHead>
+                        <TableHead>Total Loss</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {[
+                        { code: 'ST-6M', item: 'Scaffolding Tubes (6m)', damaged: 2, missing: 1, totalLoss: 3, status: 'under repair' },
+                        { code: 'BP-STD', item: 'Base Plates', damaged: 1, missing: 0, totalLoss: 1, status: 'repaired' },
+                        { code: 'CP-SW', item: 'Couplers (Swivel)', damaged: 3, missing: 2, totalLoss: 5, status: 'under repair' },
+                        { code: 'SH-PRO', item: 'Safety Harness', damaged: 4, missing: 1, totalLoss: 5, status: 'under repair' },
+                        { code: 'PL-8M', item: 'Planks (8m)', damaged: 2, missing: 1, totalLoss: 3, status: 'repaired' },
+                      ].map((item) => (
+                        <TableRow key={item.code}>
+                          <TableCell className="font-medium">{item.code}</TableCell>
+                          <TableCell>{item.item}</TableCell>
+                          <TableCell className="text-destructive font-semibold">{item.damaged}</TableCell>
+                          <TableCell className="text-warning font-semibold">{item.missing}</TableCell>
+                          <TableCell className="font-semibold">{item.totalLoss}</TableCell>
+                          <TableCell>
+                            <Badge variant={item.status === 'under repair' ? 'destructive' : 'default'}>
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="mt-6 flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => toast({ title: 'Report Generated', description: 'Stock utilization report generated' })}
+                  >
+                    Generate Report
+                  </Button>
+                  <Button
+                    variant="default"
+                    onClick={() => toast({ title: 'Report Exported', description: 'Report exported as PDF' })}
+                  >
+                    Export PDF
+                  </Button>
                 </div>
               </CardContent>
             </Card>
