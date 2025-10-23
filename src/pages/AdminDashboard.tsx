@@ -12,6 +12,10 @@ import { VendorModule } from '@/components/admin/VendorModule';
 import { UsersRolesModule } from '@/components/admin/UsersRolesModule';
 import { ReportsModule } from '@/components/admin/ReportsModule';
 import { SettingsModule } from '@/components/admin/SettingsModule';
+import { ContractsModule } from '@/components/admin/ContractsModule';
+import { InvoicesModule } from '@/components/admin/InvoicesModule';
+import { WorkOrdersModule } from '@/components/admin/WorkOrdersModule';
+import { DispatchModule } from '@/components/admin/DispatchModule';
 
 const StatCard = ({ title, value, icon: Icon, trend }: any) => (
   <Card>
@@ -34,6 +38,27 @@ const AdminDashboard = () => {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    // Check for hash in URL to set active tab
+    const hash = window.location.hash.replace('#', '');
+    if (hash && ['overview', 'equipment', 'customers', 'vendors', 'users', 'contracts', 'invoices', 'workorders', 'dispatch', 'reports', 'settings'].includes(hash)) {
+      setActiveTab(hash);
+    }
+
+    // Listen for custom tab change events from sidebar
+    const handleTabChange = (event: any) => {
+      if (event.detail && ['overview', 'equipment', 'customers', 'vendors', 'users', 'contracts', 'invoices', 'workorders', 'dispatch', 'reports', 'settings'].includes(event.detail)) {
+        setActiveTab(event.detail);
+      }
+    };
+
+    window.addEventListener('tabChange', handleTabChange);
+
+    return () => {
+      window.removeEventListener('tabChange', handleTabChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -69,15 +94,19 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="equipment">Equipment Catalog</TabsTrigger>
-            <TabsTrigger value="customers">Customers</TabsTrigger>
-            <TabsTrigger value="vendors">Vendors</TabsTrigger>
-            <TabsTrigger value="users">Users & Roles</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
+           <TabsList className="grid w-full grid-cols-11">
+             <TabsTrigger value="overview">Overview</TabsTrigger>
+             <TabsTrigger value="equipment">Equipment</TabsTrigger>
+             <TabsTrigger value="customers">Customers</TabsTrigger>
+             <TabsTrigger value="vendors">Vendors</TabsTrigger>
+             <TabsTrigger value="users">Users</TabsTrigger>
+             <TabsTrigger value="contracts">Contracts</TabsTrigger>
+             <TabsTrigger value="invoices">Invoices</TabsTrigger>
+             <TabsTrigger value="workorders">Work Orders</TabsTrigger>
+             <TabsTrigger value="dispatch">Dispatch</TabsTrigger>
+             <TabsTrigger value="reports">Reports</TabsTrigger>
+             <TabsTrigger value="settings">Settings</TabsTrigger>
+           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -191,6 +220,22 @@ const AdminDashboard = () => {
 
           <TabsContent value="settings">
             <SettingsModule />
+          </TabsContent>
+
+          <TabsContent value="contracts">
+            <ContractsModule />
+          </TabsContent>
+
+          <TabsContent value="invoices">
+            <InvoicesModule />
+          </TabsContent>
+
+          <TabsContent value="workorders">
+            <WorkOrdersModule />
+          </TabsContent>
+
+          <TabsContent value="dispatch">
+            <DispatchModule />
           </TabsContent>
         </Tabs>
       </div>

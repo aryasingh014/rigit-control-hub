@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AddEquipmentDialog } from '@/components/forms/AddEquipmentDialog';
 import { Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -15,7 +19,25 @@ const equipmentData = [
 
 export const EquipmentCatalogModule = () => {
   const [equipment, setEquipment] = useState(equipmentData);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
   const { toast } = useToast();
+
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setEquipment(equipment.map(e => e.id === editingItem.id ? editingItem : e));
+    toast({
+      title: 'Equipment Updated',
+      description: `${editingItem.description} has been updated successfully.`,
+    });
+    setEditDialogOpen(false);
+    setEditingItem(null);
+  };
 
   const handleDelete = (id: string, description: string) => {
     setEquipment(equipment.filter(e => e.id !== id));
@@ -34,6 +56,104 @@ export const EquipmentCatalogModule = () => {
         </div>
         <AddEquipmentDialog />
       </div>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Equipment</DialogTitle>
+            <DialogDescription>Update equipment details</DialogDescription>
+          </DialogHeader>
+          {editingItem && (
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="itemCode">Item Code</Label>
+                  <Input
+                    id="itemCode"
+                    value={editingItem.itemCode}
+                    onChange={(e) => setEditingItem({ ...editingItem, itemCode: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    value={editingItem.description}
+                    onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select value={editingItem.category} onValueChange={(val) => setEditingItem({ ...editingItem, category: val })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Scaffolding">Scaffolding</SelectItem>
+                      <SelectItem value="Formwork">Formwork</SelectItem>
+                      <SelectItem value="Shoring">Shoring</SelectItem>
+                      <SelectItem value="Safety">Safety</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="unit">Unit</Label>
+                  <Select value={editingItem.unit} onValueChange={(val) => setEditingItem({ ...editingItem, unit: val })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Set">Set</SelectItem>
+                      <SelectItem value="Piece">Piece</SelectItem>
+                      <SelectItem value="Unit">Unit</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dailyRate">Daily Rate (AED)</Label>
+                  <Input
+                    id="dailyRate"
+                    type="number"
+                    value={editingItem.dailyRate}
+                    onChange={(e) => setEditingItem({ ...editingItem, dailyRate: parseInt(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="quantityTotal">Total Quantity</Label>
+                  <Input
+                    id="quantityTotal"
+                    type="number"
+                    value={editingItem.quantityTotal}
+                    onChange={(e) => setEditingItem({ ...editingItem, quantityTotal: parseInt(e.target.value) })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quantityAvailable">Available Quantity</Label>
+                <Input
+                  id="quantityAvailable"
+                  type="number"
+                  value={editingItem.quantityAvailable}
+                  onChange={(e) => setEditingItem({ ...editingItem, quantityAvailable: parseInt(e.target.value) })}
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+                <Button type="submit">Update Equipment</Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div className="border rounded-lg">
         <Table>
@@ -66,11 +186,11 @@ export const EquipmentCatalogModule = () => {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="mr-2">
+                  <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEdit(item)}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={() => handleDelete(item.id, item.description)}
                   >

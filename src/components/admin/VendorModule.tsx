@@ -16,6 +16,8 @@ const vendorData = [
 export const VendorModule = () => {
   const [vendors, setVendors] = useState(vendorData);
   const [open, setOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingVendor, setEditingVendor] = useState<any>(null);
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', crNumber: '', tradeLicense: '', address: ''
@@ -29,6 +31,22 @@ export const VendorModule = () => {
     });
     setOpen(false);
     setFormData({ name: '', email: '', phone: '', crNumber: '', tradeLicense: '', address: '' });
+  };
+
+  const handleEdit = (vendor: any) => {
+    setEditingVendor(vendor);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setVendors(vendors.map(v => v.id === editingVendor.id ? editingVendor : v));
+    toast({
+      title: 'Vendor Updated',
+      description: `${editingVendor.name} has been updated successfully.`,
+    });
+    setEditDialogOpen(false);
+    setEditingVendor(null);
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -94,6 +112,51 @@ export const VendorModule = () => {
             </form>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Vendor</DialogTitle>
+              <DialogDescription>Update vendor details</DialogDescription>
+            </DialogHeader>
+            {editingVendor && (
+              <form onSubmit={handleEditSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-name">Company Name</Label>
+                    <Input id="edit-name" value={editingVendor.name} onChange={(e) => setEditingVendor({ ...editingVendor, name: e.target.value })} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-email">Email</Label>
+                    <Input id="edit-email" type="email" value={editingVendor.email} onChange={(e) => setEditingVendor({ ...editingVendor, email: e.target.value })} required />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-phone">Phone</Label>
+                    <Input id="edit-phone" value={editingVendor.phone} onChange={(e) => setEditingVendor({ ...editingVendor, phone: e.target.value })} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-crNumber">CR Number</Label>
+                    <Input id="edit-crNumber" value={editingVendor.crNumber} onChange={(e) => setEditingVendor({ ...editingVendor, crNumber: e.target.value })} required />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-tradeLicense">Trade License</Label>
+                  <Input id="edit-tradeLicense" value={editingVendor.tradeLicense} onChange={(e) => setEditingVendor({ ...editingVendor, tradeLicense: e.target.value })} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-address">Address</Label>
+                  <Input id="edit-address" value={editingVendor.address} onChange={(e) => setEditingVendor({ ...editingVendor, address: e.target.value })} required />
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+                  <Button type="submit">Update Vendor</Button>
+                </div>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="border rounded-lg">
@@ -117,7 +180,7 @@ export const VendorModule = () => {
                 <TableCell>{vendor.crNumber}</TableCell>
                 <TableCell>{vendor.tradeLicense}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="mr-2">
+                  <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEdit(vendor)}>
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => handleDelete(vendor.id, vendor.name)}>

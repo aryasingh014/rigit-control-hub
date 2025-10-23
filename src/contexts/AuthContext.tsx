@@ -29,24 +29,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   const fetchUserRole = async (userId: string) => {
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
-    
-    if (data) {
-      setRole(data.role);
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user role:', error);
+        // If no role found, set to null (user might not have a role assigned yet)
+        setRole(null);
+        return;
+      }
+
+      if (data) {
+        setRole(data.role);
+      }
+    } catch (error) {
+      console.error('Error in fetchUserRole:', error);
+      setRole(null);
     }
   };
 
   useEffect(() => {
+    // Check for demo user first
+    const demoUser = localStorage.getItem('demo_user');
+    if (demoUser) {
+      const parsedDemoUser = JSON.parse(demoUser);
+      setUser({ id: 'demo-user', email: parsedDemoUser.email } as any);
+      setRole(parsedDemoUser.role);
+      setLoading(false);
+      return;
+    }
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
           setTimeout(() => fetchUserRole(session.user.id), 0);
         } else {
@@ -60,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         fetchUserRole(session.user.id);
       }

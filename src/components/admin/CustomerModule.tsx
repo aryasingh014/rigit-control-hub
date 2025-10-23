@@ -16,6 +16,8 @@ const customerData = [
 export const CustomerModule = () => {
   const [customers, setCustomers] = useState(customerData);
   const [open, setOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<any>(null);
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', crNumber: '', vatNumber: '', creditLimit: '', depositAmount: ''
@@ -23,12 +25,41 @@ export const CustomerModule = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Here you would typically save to database
+    console.log('Adding customer:', formData);
+    const newCustomer = {
+      id: (customers.length + 1).toString(),
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      crNumber: formData.crNumber,
+      vatNumber: formData.vatNumber,
+      creditLimit: parseInt(formData.creditLimit),
+      depositAmount: parseInt(formData.depositAmount)
+    };
+    setCustomers([...customers, newCustomer]);
     toast({
       title: 'Customer Added',
       description: `${formData.name} has been added successfully.`,
     });
     setOpen(false);
     setFormData({ name: '', email: '', phone: '', crNumber: '', vatNumber: '', creditLimit: '', depositAmount: '' });
+  };
+
+  const handleEdit = (customer: any) => {
+    setEditingCustomer(customer);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCustomers(customers.map(c => c.id === editingCustomer.id ? editingCustomer : c));
+    toast({
+      title: 'Customer Updated',
+      description: `${editingCustomer.name} has been updated successfully.`,
+    });
+    setEditDialogOpen(false);
+    setEditingCustomer(null);
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -100,6 +131,57 @@ export const CustomerModule = () => {
             </form>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Customer</DialogTitle>
+              <DialogDescription>Update customer details</DialogDescription>
+            </DialogHeader>
+            {editingCustomer && (
+              <form onSubmit={handleEditSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-name">Company Name</Label>
+                    <Input id="edit-name" value={editingCustomer.name} onChange={(e) => setEditingCustomer({ ...editingCustomer, name: e.target.value })} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-email">Email</Label>
+                    <Input id="edit-email" type="email" value={editingCustomer.email} onChange={(e) => setEditingCustomer({ ...editingCustomer, email: e.target.value })} required />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-phone">Phone</Label>
+                    <Input id="edit-phone" value={editingCustomer.phone} onChange={(e) => setEditingCustomer({ ...editingCustomer, phone: e.target.value })} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-crNumber">CR Number</Label>
+                    <Input id="edit-crNumber" value={editingCustomer.crNumber} onChange={(e) => setEditingCustomer({ ...editingCustomer, crNumber: e.target.value })} required />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-vatNumber">VAT Number</Label>
+                    <Input id="edit-vatNumber" value={editingCustomer.vatNumber} onChange={(e) => setEditingCustomer({ ...editingCustomer, vatNumber: e.target.value })} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-creditLimit">Credit Limit (AED)</Label>
+                    <Input id="edit-creditLimit" type="number" value={editingCustomer.creditLimit} onChange={(e) => setEditingCustomer({ ...editingCustomer, creditLimit: parseInt(e.target.value) })} required />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-depositAmount">Deposit Amount (AED)</Label>
+                  <Input id="edit-depositAmount" type="number" value={editingCustomer.depositAmount} onChange={(e) => setEditingCustomer({ ...editingCustomer, depositAmount: parseInt(e.target.value) })} required />
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+                  <Button type="submit">Update Customer</Button>
+                </div>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="border rounded-lg">
@@ -125,7 +207,7 @@ export const CustomerModule = () => {
                 <TableCell>AED {customer.creditLimit.toLocaleString()}</TableCell>
                 <TableCell>AED {customer.depositAmount.toLocaleString()}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="mr-2">
+                  <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEdit(customer)}>
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => handleDelete(customer.id, customer.name)}>

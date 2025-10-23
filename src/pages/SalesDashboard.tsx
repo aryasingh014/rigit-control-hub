@@ -1,19 +1,24 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Users, TrendingUp, Plus } from 'lucide-react';
+import { FileText, Users, TrendingUp, Plus, DollarSign, Calendar, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreateContractDialog } from '@/components/forms/CreateContractDialog';
+import { CustomerModule } from '@/components/admin/CustomerModule';
+import { ContractsModule } from '@/components/admin/ContractsModule';
+import { InvoicesModule } from '@/components/admin/InvoicesModule';
 import { useToast } from '@/hooks/use-toast';
 
 const SalesDashboard = () => {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -23,180 +28,294 @@ const SalesDashboard = () => {
     }
   }, [user, role, loading, navigate]);
 
+  useEffect(() => {
+    // Listen for sales tab change events from sidebar
+    const handleSalesTabChange = (event: any) => {
+      if (event.detail && ['contracts', 'quotations', 'customers', 'reports'].includes(event.detail)) {
+        const tabMap: Record<string, string> = {
+          'contracts': 'contracts',
+          'quotations': 'overview', // quotations are shown in overview
+          'customers': 'customers',
+          'reports': 'reports'
+        };
+        setActiveTab(tabMap[event.detail] || 'overview');
+      }
+    };
+
+    window.addEventListener('salesTabChange', handleSalesTabChange);
+
+    return () => {
+      window.removeEventListener('salesTabChange', handleSalesTabChange);
+    };
+  }, []);
+
   if (loading) return null;
 
   return (
     <DashboardLayout role="sales">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Sales Dashboard</h2>
-            <p className="text-muted-foreground">
-              Manage rental contracts, quotations, and customer relationships
-            </p>
-          </div>
-          <CreateContractDialog />
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Sales Dashboard</h2>
+          <p className="text-muted-foreground">
+            Manage rental contracts, quotations, and customer relationships
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Active Contracts
-              </CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">42</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                <span className="text-success">+5</span> new this week
-              </p>
-            </CardContent>
-          </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="contracts">Contracts</TabsTrigger>
+            <TabsTrigger value="customers">Customers</TabsTrigger>
+            <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
+          </TabsList>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Pending Approval
-              </CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">8</div>
-              <p className="text-xs text-muted-foreground mt-1">Requires attention</p>
-            </CardContent>
-          </Card>
+          <TabsContent value="overview" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div></div>
+              <CreateContractDialog />
+            </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Revenue (Month)
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$89,245</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                <span className="text-success">+12%</span> vs last month
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Active Contracts
+                  </CardTitle>
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">42</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    <span className="text-success">+5</span> new this week
+                  </p>
+                </CardContent>
+              </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Contracts</CardTitle>
-              <CardDescription>Latest rental agreements and their status</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Contract ID</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {[
-                    { id: 'RC-2025-001', customer: 'ABC Construction LLC', amount: '$12,500', status: 'active' },
-                    { id: 'RC-2025-002', customer: 'XYZ Builders', amount: '$8,900', status: 'pending_approval' },
-                    { id: 'RC-2024-089', customer: 'Elite Construction', amount: '$15,200', status: 'active' },
-                    { id: 'RC-2025-003', customer: 'Modern Builders', amount: '$6,750', status: 'draft' },
-                  ].map((contract) => (
-                    <TableRow key={contract.id}>
-                      <TableCell className="font-medium">{contract.id}</TableCell>
-                      <TableCell>{contract.customer}</TableCell>
-                      <TableCell className="font-semibold">{contract.amount}</TableCell>
-                      <TableCell>
-                        <Badge variant={contract.status === 'active' ? 'default' : 'secondary'}>
-                          {contract.status.replace('_', ' ')}
-                        </Badge>
-                      </TableCell>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Pending Approval
+                  </CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">8</div>
+                  <p className="text-xs text-muted-foreground mt-1">Requires attention</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Revenue (Month)
+                  </CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">$89,245</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    <span className="text-success">+12%</span> vs last month
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Total Customers
+                  </CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">89</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    <span className="text-success">+3</span> new this month
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Contracts</CardTitle>
+                  <CardDescription>Latest rental agreements and their status</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Contract ID</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {[
+                        { id: 'RC-2025-001', customer: 'ABC Construction LLC', amount: '$12,500', status: 'active' },
+                        { id: 'RC-2025-002', customer: 'XYZ Builders', amount: '$8,900', status: 'pending_approval' },
+                        { id: 'RC-2024-089', customer: 'Elite Construction', amount: '$15,200', status: 'active' },
+                        { id: 'RC-2025-003', customer: 'Modern Builders', amount: '$6,750', status: 'draft' },
+                      ].map((contract) => (
+                        <TableRow key={contract.id}>
+                          <TableCell className="font-medium">{contract.id}</TableCell>
+                          <TableCell>{contract.customer}</TableCell>
+                          <TableCell className="font-semibold">{contract.amount}</TableCell>
+                          <TableCell>
+                            <Badge variant={contract.status === 'active' ? 'default' : 'secondary'}>
+                              {contract.status.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Customers</CardTitle>
+                  <CardDescription>Highest revenue generators this month</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { name: 'ABC Construction LLC', contracts: 8, revenue: '$42,500', trend: '+15%' },
+                      { name: 'Elite Construction', contracts: 5, revenue: '$38,200', trend: '+8%' },
+                      { name: 'XYZ Builders', contracts: 6, revenue: '$31,400', trend: '+22%' },
+                      { name: 'Modern Builders', contracts: 4, revenue: '$24,800', trend: '+5%' },
+                    ].map((customer, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-semibold">{customer.name}</p>
+                          <p className="text-sm text-muted-foreground">{customer.contracts} active contracts</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold">{customer.revenue}</p>
+                          <p className="text-xs text-success">{customer.trend}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Pending Quotations</CardTitle>
+                <CardDescription>Awaiting customer approval</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Quote ID</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Project</TableHead>
+                      <TableHead>Equipment</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Valid Until</TableHead>
+                      <TableHead>Action</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {[
+                      { id: 'QT-2025-045', customer: 'New Project LLC', project: 'Skyline Tower', equipment: 'Complete Scaffolding', amount: '$18,500', validUntil: 'Oct 30, 2025' },
+                      { id: 'QT-2025-046', customer: 'Urban Developers', project: 'Residential Complex', equipment: 'Safety Equipment', amount: '$9,200', validUntil: 'Oct 28, 2025' },
+                      { id: 'QT-2025-047', customer: 'Prime Construction', project: 'Mall Extension', equipment: 'Mobile Platforms', amount: '$12,800', validUntil: 'Nov 5, 2025' },
+                    ].map((quote) => (
+                      <TableRow key={quote.id}>
+                        <TableCell className="font-medium">{quote.id}</TableCell>
+                        <TableCell>{quote.customer}</TableCell>
+                        <TableCell>{quote.project}</TableCell>
+                        <TableCell className="text-sm">{quote.equipment}</TableCell>
+                        <TableCell className="font-semibold">{quote.amount}</TableCell>
+                        <TableCell className="text-sm">{quote.validUntil}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toast({ title: 'Follow Up', description: `Following up with ${quote.customer}` })}
+                          >
+                            Follow Up
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Customers</CardTitle>
-              <CardDescription>Highest revenue generators this month</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { name: 'ABC Construction LLC', contracts: 8, revenue: '$42,500', trend: '+15%' },
-                  { name: 'Elite Construction', contracts: 5, revenue: '$38,200', trend: '+8%' },
-                  { name: 'XYZ Builders', contracts: 6, revenue: '$31,400', trend: '+22%' },
-                  { name: 'Modern Builders', contracts: 4, revenue: '$24,800', trend: '+5%' },
-                ].map((customer, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex-1">
-                      <p className="font-semibold">{customer.name}</p>
-                      <p className="text-sm text-muted-foreground">{customer.contracts} active contracts</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">{customer.revenue}</p>
-                      <p className="text-xs text-success">{customer.trend}</p>
+          <TabsContent value="contracts">
+            <ContractsModule />
+          </TabsContent>
+
+          <TabsContent value="customers">
+            <CustomerModule />
+          </TabsContent>
+
+          <TabsContent value="invoices">
+            <InvoicesModule />
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <Card>
+              <CardHeader>
+                <CardTitle>Sales Reports</CardTitle>
+                <CardDescription>Analytics and insights for sales performance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Monthly Revenue</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">$89,245</div>
+                      <p className="text-xs text-muted-foreground">+12% from last month</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Contracts Signed</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">42</div>
+                      <p className="text-xs text-muted-foreground">+5 new this week</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Average Deal Size</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">$2,125</div>
+                      <p className="text-xs text-muted-foreground">+8% from last month</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold mb-4">Revenue Trends</h3>
+                  <div className="h-64 flex items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                    <div className="text-center">
+                      <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-muted-foreground">Revenue chart will be displayed here</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Pending Quotations</CardTitle>
-            <CardDescription>Awaiting customer approval</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Quote ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Equipment</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Valid Until</TableHead>
-                  <TableHead>Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {[
-                  { id: 'QT-2025-045', customer: 'New Project LLC', project: 'Skyline Tower', equipment: 'Complete Scaffolding', amount: '$18,500', validUntil: 'Oct 30, 2025' },
-                  { id: 'QT-2025-046', customer: 'Urban Developers', project: 'Residential Complex', equipment: 'Safety Equipment', amount: '$9,200', validUntil: 'Oct 28, 2025' },
-                  { id: 'QT-2025-047', customer: 'Prime Construction', project: 'Mall Extension', equipment: 'Mobile Platforms', amount: '$12,800', validUntil: 'Nov 5, 2025' },
-                ].map((quote) => (
-                  <TableRow key={quote.id}>
-                    <TableCell className="font-medium">{quote.id}</TableCell>
-                    <TableCell>{quote.customer}</TableCell>
-                    <TableCell>{quote.project}</TableCell>
-                    <TableCell className="text-sm">{quote.equipment}</TableCell>
-                    <TableCell className="font-semibold">{quote.amount}</TableCell>
-                    <TableCell className="text-sm">{quote.validUntil}</TableCell>
-                    <TableCell>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => toast({ title: 'Follow Up', description: `Following up with ${quote.customer}` })}
-                      >
-                        Follow Up
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );

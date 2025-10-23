@@ -19,6 +19,8 @@ const usersData = [
 export const UsersRolesModule = () => {
   const [users, setUsers] = useState(usersData);
   const [open, setOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     email: '', fullName: '', role: '', password: ''
@@ -32,6 +34,22 @@ export const UsersRolesModule = () => {
     });
     setOpen(false);
     setFormData({ email: '', fullName: '', role: '', password: '' });
+  };
+
+  const handleEdit = (user: any) => {
+    setEditingUser(user);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
+    toast({
+      title: 'User Updated',
+      description: `${editingUser.fullName} has been updated successfully.`,
+    });
+    setEditDialogOpen(false);
+    setEditingUser(null);
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -107,6 +125,47 @@ export const UsersRolesModule = () => {
             </form>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit User</DialogTitle>
+              <DialogDescription>Update user details and role</DialogDescription>
+            </DialogHeader>
+            {editingUser && (
+              <form onSubmit={handleEditSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-fullName">Full Name</Label>
+                  <Input id="edit-fullName" value={editingUser.fullName} onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-email">Email</Label>
+                  <Input id="edit-email" type="email" value={editingUser.email} onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-role">Role</Label>
+                  <Select value={editingUser.role} onValueChange={(val) => setEditingUser({ ...editingUser, role: val })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="sales">Sales</SelectItem>
+                      <SelectItem value="warehouse">Warehouse</SelectItem>
+                      <SelectItem value="finance">Finance</SelectItem>
+                      <SelectItem value="vendor">Vendor</SelectItem>
+                      <SelectItem value="customer">Customer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+                  <Button type="submit">Update User</Button>
+                </div>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="border rounded-lg">
@@ -138,7 +197,7 @@ export const UsersRolesModule = () => {
                 </TableCell>
                 <TableCell>{user.lastLogin}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="mr-2">
+                  <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEdit(user)}>
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => handleDelete(user.id, user.fullName)}>

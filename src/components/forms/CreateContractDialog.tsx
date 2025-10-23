@@ -21,6 +21,8 @@ export const CreateContractDialog = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Here you would typically save to database
+    console.log('Creating contract:', formData);
     toast({
       title: 'Contract Created',
       description: `Contract for ${formData.customer} has been created successfully.`,

@@ -30,14 +30,26 @@ const Auth = () => {
   }, []);
 
   const checkUserRoleAndRedirect = async (userId: string) => {
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
 
-    if (data?.role) {
-      navigate(`/${data.role}`);
+      if (error) {
+        console.error('Error fetching user role:', error);
+        // If no role found, redirect to auth page
+        navigate('/auth');
+        return;
+      }
+
+      if (data?.role) {
+        navigate(`/${data.role}`);
+      }
+    } catch (error) {
+      console.error('Error in checkUserRoleAndRedirect:', error);
+      navigate('/auth');
     }
   };
 
@@ -45,8 +57,32 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    // Define demo credentials outside the if-else to be accessible in both login and signup
+    const demoCredentials = [
+      { email: 'admin@demo.com', password: 'admin123', role: 'admin' },
+      { email: 'sales@demo.com', password: 'sales123', role: 'sales' },
+      { email: 'warehouse@demo.com', password: 'warehouse123', role: 'warehouse' },
+      { email: 'finance@demo.com', password: 'finance123', role: 'finance' },
+      { email: 'vendor@demo.com', password: 'vendor123', role: 'vendor' },
+      { email: 'customer@demo.com', password: 'customer123', role: 'customer' },
+    ];
+
     try {
       if (isLogin) {
+        // Check if it's a demo login
+        const demoUser = demoCredentials.find(cred => cred.email.toLowerCase() === trimmedEmail.toLowerCase() && cred.password === trimmedPassword);
+
+        if (demoUser) {
+          // Simulate successful login for demo users
+          localStorage.setItem('demo_user', JSON.stringify(demoUser));
+          setLoading(false);
+          navigate(`/${demoUser.role}`);
+          return;
+        }
+
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -58,6 +94,18 @@ const Auth = () => {
           await checkUserRoleAndRedirect(data.user.id);
         }
       } else {
+        // Check if trying to sign up with demo email
+        const isDemoEmail = demoCredentials.some(cred => cred.email === email);
+        if (isDemoEmail) {
+          toast({
+            title: 'Demo Account',
+            description: 'Demo accounts cannot be registered. Please use the demo login credentials instead.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
+
         if (!selectedRole) {
           toast({
             title: 'Error',

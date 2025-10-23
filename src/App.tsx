@@ -22,15 +22,15 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/demo-credentials" element={<DemoCredentials />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/sales" element={<SalesDashboard />} />
-            <Route path="/warehouse" element={<WarehouseDashboard />} />
+            <Route path="/admin/*" element={<AdminDashboard />} />
+            <Route path="/sales/*" element={<SalesDashboard />} />
+            <Route path="/warehouse/*" element={<WarehouseDashboard />} />
             <Route path="/finance" element={<FinanceDashboard />} />
             <Route path="/vendor" element={<VendorDashboard />} />
             <Route path="/customer" element={<CustomerDashboard />} />

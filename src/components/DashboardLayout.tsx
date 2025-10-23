@@ -13,6 +13,7 @@ import {
   LogOut,
   Building2,
   Menu,
+  BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -36,13 +37,17 @@ interface DashboardLayoutProps {
 
 const roleMenuItems = {
   admin: [
-    { title: 'Overview', icon: LayoutDashboard, path: '/admin' },
-    { title: 'Equipment Catalog', icon: Package, path: '/admin/equipment' },
-    { title: 'Customers', icon: Users, path: '/admin/customers' },
-    { title: 'Vendors', icon: Truck, path: '/admin/vendors' },
-    { title: 'Users & Roles', icon: Users, path: '/admin/users' },
-    { title: 'Reports', icon: FileText, path: '/admin/reports' },
-    { title: 'Settings', icon: Settings, path: '/admin/settings' },
+    { title: 'Overview', icon: LayoutDashboard, path: '/admin', tab: 'overview' },
+    { title: 'Equipment Catalog', icon: Package, path: '/admin', tab: 'equipment' },
+    { title: 'Customers', icon: Users, path: '/admin', tab: 'customers' },
+    { title: 'Vendors', icon: Truck, path: '/admin', tab: 'vendors' },
+    { title: 'Users & Roles', icon: Users, path: '/admin', tab: 'users' },
+    { title: 'Contracts', icon: FileText, path: '/admin', tab: 'contracts' },
+    { title: 'Invoices', icon: DollarSign, path: '/admin', tab: 'invoices' },
+    { title: 'Work Orders', icon: FileText, path: '/admin', tab: 'workorders' },
+    { title: 'Dispatch', icon: Truck, path: '/admin', tab: 'dispatch' },
+    { title: 'Reports', icon: FileText, path: '/admin', tab: 'reports' },
+    { title: 'Settings', icon: Settings, path: '/admin', tab: 'settings' },
   ],
   sales: [
     { title: 'Overview', icon: LayoutDashboard, path: '/sales' },
@@ -52,27 +57,29 @@ const roleMenuItems = {
     { title: 'Reports', icon: FileText, path: '/sales/reports' },
   ],
   warehouse: [
-    { title: 'Overview', icon: LayoutDashboard, path: '/warehouse' },
-    { title: 'Dispatch', icon: Truck, path: '/warehouse/dispatch' },
-    { title: 'Returns', icon: Package, path: '/warehouse/returns' },
-    { title: 'Stock', icon: Package, path: '/warehouse/stock' },
-    { title: 'Reports', icon: FileText, path: '/warehouse/reports' },
+    { title: 'Overview', icon: LayoutDashboard, path: '/warehouse', tab: 'overview' },
+    { title: 'Dispatch', icon: Truck, path: '/warehouse', tab: 'dispatch' },
+    { title: 'Returns', icon: Package, path: '/warehouse', tab: 'returns' },
+    { title: 'Stock', icon: Package, path: '/warehouse', tab: 'stock' },
+    { title: 'Reports', icon: FileText, path: '/warehouse', tab: 'reports' },
   ],
   finance: [
-    { title: 'Overview', icon: LayoutDashboard, path: '/finance' },
-    { title: 'Invoices', icon: FileText, path: '/finance/invoices' },
-    { title: 'Payments', icon: DollarSign, path: '/finance/payments' },
-    { title: 'Reports', icon: FileText, path: '/finance/reports' },
+    { title: 'Overview', icon: LayoutDashboard, path: '/finance', tab: 'overview' },
+    { title: 'Invoices', icon: FileText, path: '/finance', tab: 'invoices' },
+    { title: 'Payments', icon: DollarSign, path: '/finance', tab: 'payments' },
+    { title: 'Reports', icon: BarChart3, path: '/finance', tab: 'reports' },
   ],
   vendor: [
-    { title: 'Overview', icon: LayoutDashboard, path: '/vendor' },
-    { title: 'Work Orders', icon: FileText, path: '/vendor/orders' },
-    { title: 'Invoices', icon: DollarSign, path: '/vendor/invoices' },
+    { title: 'Overview', icon: LayoutDashboard, path: '/vendor', tab: 'overview' },
+    { title: 'Work Orders', icon: FileText, path: '/vendor', tab: 'workorders' },
+    { title: 'Invoices', icon: DollarSign, path: '/vendor', tab: 'invoices' },
+    { title: 'Payments', icon: DollarSign, path: '/vendor', tab: 'payments' },
   ],
   customer: [
-    { title: 'Overview', icon: LayoutDashboard, path: '/customer' },
-    { title: 'Active Rentals', icon: Package, path: '/customer/rentals' },
-    { title: 'Billing', icon: DollarSign, path: '/customer/billing' },
+    { title: 'Overview', icon: LayoutDashboard, path: '/customer', tab: 'overview' },
+    { title: 'Rentals', icon: Package, path: '/customer', tab: 'rentals' },
+    { title: 'Invoices', icon: DollarSign, path: '/customer', tab: 'invoices' },
+    { title: 'Profile', icon: Users, path: '/customer', tab: 'profile' },
   ],
 };
 
@@ -82,6 +89,62 @@ const AppSidebar = ({ role }: { role: string }) => {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const menuItems = roleMenuItems[role as keyof typeof roleMenuItems] || [];
+
+  const handleMenuClick = (item: any) => {
+    if (role === 'admin' && item.tab) {
+      // For admin, navigate to /admin and set the active tab
+      navigate('/admin');
+      // Use a timeout to ensure navigation completes before setting hash
+      setTimeout(() => {
+        window.location.hash = item.tab;
+        // Force a re-render by triggering a custom event
+        window.dispatchEvent(new CustomEvent('tabChange', { detail: item.tab }));
+      }, 100);
+    } else if (role === 'sales' && item.path.includes('/sales/')) {
+      // For sales, navigate to the specific path and set the tab based on the path
+      navigate(item.path);
+      const tabName = item.path.split('/').pop();
+      if (tabName && ['contracts', 'quotations', 'customers', 'reports'].includes(tabName)) {
+        // Trigger tab change for sales dashboard
+        window.dispatchEvent(new CustomEvent('salesTabChange', { detail: tabName }));
+      }
+    } else if (role === 'warehouse' && item.tab) {
+      // For warehouse, navigate to /warehouse and set the active tab
+      navigate('/warehouse');
+      // Use a timeout to ensure navigation completes before setting hash
+      setTimeout(() => {
+        // Trigger tab change for warehouse dashboard
+        window.dispatchEvent(new CustomEvent('warehouseTabChange', { detail: item.tab }));
+      }, 100);
+    } else if (role === 'finance' && item.tab) {
+      // For finance, navigate to /finance and set the active tab
+      navigate('/finance');
+      // Use a timeout to ensure navigation completes before setting hash
+      setTimeout(() => {
+        // Trigger tab change for finance dashboard
+        window.dispatchEvent(new CustomEvent('financeTabChange', { detail: item.tab }));
+      }, 100);
+    } else if (role === 'vendor' && item.tab) {
+      // For vendor, navigate to /vendor and set the active tab
+      navigate('/vendor');
+      // Use a timeout to ensure navigation completes before setting hash
+      setTimeout(() => {
+        window.location.hash = item.tab;
+        // Trigger tab change for vendor dashboard
+        window.dispatchEvent(new CustomEvent('tabChange', { detail: item.tab }));
+      }, 100);
+    } else if (role === 'customer' && item.tab) {
+      // For customer, navigate to /customer and set the active tab
+      navigate('/customer');
+      // Use a timeout to ensure navigation completes before setting hash
+      setTimeout(() => {
+        // Trigger tab change for customer dashboard
+        window.dispatchEvent(new CustomEvent('customerTabChange', { detail: item.tab }));
+      }, 100);
+    } else {
+      navigate(item.path);
+    }
+  };
 
   return (
     <Sidebar className={cn(collapsed ? 'w-14' : 'w-64')}>
@@ -106,7 +169,7 @@ const AppSidebar = ({ role }: { role: string }) => {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <button
-                      onClick={() => navigate(item.path)}
+                      onClick={() => handleMenuClick(item)}
                       className="flex items-center gap-3 w-full"
                     >
                       <item.icon className="h-4 w-4" />
@@ -121,7 +184,7 @@ const AppSidebar = ({ role }: { role: string }) => {
 
         <div className="mt-auto p-4 border-t border-sidebar-border">
           <Button
-            variant="outline"
+            variant="destructive"
             className="w-full"
             onClick={signOut}
           >

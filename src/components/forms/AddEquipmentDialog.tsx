@@ -21,6 +21,8 @@ export const AddEquipmentDialog = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Here you would typically save to database
+    console.log('Adding equipment:', formData);
     toast({
       title: 'Equipment Added',
       description: `${formData.description} has been added to the catalog.`,

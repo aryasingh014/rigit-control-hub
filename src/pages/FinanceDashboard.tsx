@@ -1,19 +1,24 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, FileText, AlertCircle, TrendingUp } from 'lucide-react';
+import { DollarSign, FileText, AlertCircle, TrendingUp, CreditCard, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GenerateInvoiceDialog } from '@/components/forms/GenerateInvoiceDialog';
+import { InvoicesModule } from '@/components/admin/InvoicesModule';
+import { PaymentsModule } from '@/components/finance/PaymentsModule';
+import { FinanceReportsModule } from '@/components/finance/FinanceReportsModule';
 import { useToast } from '@/hooks/use-toast';
 
 const FinanceDashboard = () => {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -23,6 +28,21 @@ const FinanceDashboard = () => {
     }
   }, [user, role, loading, navigate]);
 
+  useEffect(() => {
+    // Listen for finance tab change events from sidebar
+    const handleFinanceTabChange = (event: any) => {
+      if (event.detail && ['overview', 'invoices', 'payments', 'reports'].includes(event.detail)) {
+        setActiveTab(event.detail);
+      }
+    };
+
+    window.addEventListener('financeTabChange', handleFinanceTabChange);
+
+    return () => {
+      window.removeEventListener('financeTabChange', handleFinanceTabChange);
+    };
+  }, []);
+
   if (loading) return null;
 
   return (
@@ -31,11 +51,20 @@ const FinanceDashboard = () => {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Finance Dashboard</h2>
           <p className="text-muted-foreground">
-            Invoicing, billing, and financial performance tracking
+            Invoicing, billing, payments, and financial performance tracking
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -204,6 +233,20 @@ const FinanceDashboard = () => {
             </CardContent>
           </Card>
         </div>
+          </TabsContent>
+
+          <TabsContent value="invoices">
+            <InvoicesModule />
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <PaymentsModule />
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <FinanceReportsModule />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
