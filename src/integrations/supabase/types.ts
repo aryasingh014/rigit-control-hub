@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      customer_enquiries: {
+        Row: {
+          assigned_to: string | null
+          company_name: string | null
+          created_at: string | null
+          created_by: string | null
+          customer_name: string
+          email: string
+          enquiry_number: string
+          equipment_required: string
+          id: string
+          notes: string | null
+          phone: string
+          project_details: string | null
+          project_name: string | null
+          rental_duration: string
+          site_location: string
+          source: string | null
+          start_date: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          customer_name: string
+          email: string
+          enquiry_number: string
+          equipment_required: string
+          id?: string
+          notes?: string | null
+          phone: string
+          project_details?: string | null
+          project_name?: string | null
+          rental_duration: string
+          site_location: string
+          source?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          customer_name?: string
+          email?: string
+          enquiry_number?: string
+          equipment_required?: string
+          id?: string
+          notes?: string | null
+          phone?: string
+          project_details?: string | null
+          project_name?: string | null
+          rental_duration?: string
+          site_location?: string
+          source?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -127,6 +193,176 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      quotation_items: {
+        Row: {
+          breadth: number | null
+          created_at: string | null
+          cutting_charges: number | null
+          description: string | null
+          equipment_code: string | null
+          equipment_type: string
+          id: string
+          length: number | null
+          line_total: number
+          quantity: number
+          quotation_id: string
+          rate_per_unit: number
+          rate_type: string | null
+          rental_days: number
+          size_sqft: number | null
+          unit: string
+          wastage_charges: number | null
+          wastage_percentage: number | null
+        }
+        Insert: {
+          breadth?: number | null
+          created_at?: string | null
+          cutting_charges?: number | null
+          description?: string | null
+          equipment_code?: string | null
+          equipment_type: string
+          id?: string
+          length?: number | null
+          line_total: number
+          quantity: number
+          quotation_id: string
+          rate_per_unit: number
+          rate_type?: string | null
+          rental_days: number
+          size_sqft?: number | null
+          unit?: string
+          wastage_charges?: number | null
+          wastage_percentage?: number | null
+        }
+        Update: {
+          breadth?: number | null
+          created_at?: string | null
+          cutting_charges?: number | null
+          description?: string | null
+          equipment_code?: string | null
+          equipment_type?: string
+          id?: string
+          length?: number | null
+          line_total?: number
+          quantity?: number
+          quotation_id?: string
+          rate_per_unit?: number
+          rate_type?: string | null
+          rental_days?: number
+          size_sqft?: number | null
+          unit?: string
+          wastage_charges?: number | null
+          wastage_percentage?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotation_items_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotations: {
+        Row: {
+          approval_date: string | null
+          approved_by: string | null
+          created_at: string | null
+          created_by: string
+          customer_email: string
+          customer_id: string | null
+          customer_name: string
+          customer_phone: string
+          enquiry_id: string | null
+          id: string
+          notes: string | null
+          project_name: string | null
+          quotation_number: string
+          rejection_reason: string | null
+          rental_duration_days: number
+          rental_end_date: string
+          rental_start_date: string
+          site_location: string
+          status: string
+          subtotal: number
+          terms_and_conditions: string | null
+          total_amount: number
+          updated_at: string | null
+          vat_amount: number
+          vat_percentage: number
+        }
+        Insert: {
+          approval_date?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          created_by: string
+          customer_email: string
+          customer_id?: string | null
+          customer_name: string
+          customer_phone: string
+          enquiry_id?: string | null
+          id?: string
+          notes?: string | null
+          project_name?: string | null
+          quotation_number: string
+          rejection_reason?: string | null
+          rental_duration_days: number
+          rental_end_date: string
+          rental_start_date: string
+          site_location: string
+          status?: string
+          subtotal?: number
+          terms_and_conditions?: string | null
+          total_amount?: number
+          updated_at?: string | null
+          vat_amount?: number
+          vat_percentage?: number
+        }
+        Update: {
+          approval_date?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          created_by?: string
+          customer_email?: string
+          customer_id?: string | null
+          customer_name?: string
+          customer_phone?: string
+          enquiry_id?: string | null
+          id?: string
+          notes?: string | null
+          project_name?: string | null
+          quotation_number?: string
+          rejection_reason?: string | null
+          rental_duration_days?: number
+          rental_end_date?: string
+          rental_start_date?: string
+          site_location?: string
+          status?: string
+          subtotal?: number
+          terms_and_conditions?: string | null
+          total_amount?: number
+          updated_at?: string | null
+          vat_amount?: number
+          vat_percentage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotations_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotations_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "customer_enquiries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rental_contracts: {
         Row: {
@@ -274,6 +510,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_enquiry_number: { Args: never; Returns: string }
+      generate_quotation_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
