@@ -40,7 +40,7 @@ export const ReturnRequestsModule = () => {
     if (!user) return;
 
     try {
-      // Mock data for now
+      // Mock data for demo
       const mockRequests: ReturnRequest[] = [
         {
           id: '1',
@@ -60,19 +60,7 @@ export const ReturnRequestsModule = () => {
         },
       ];
 
-      // Try database fetch
-      const { data, error } = await supabase
-        .from('return_requests')
-        .select('*')
-        .eq('customer_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.warn('Database fetch failed, using mock data:', error);
-        setRequests(mockRequests);
-      } else {
-        setRequests(data && data.length > 0 ? data : mockRequests);
-      }
+      setRequests(mockRequests);
     } catch (error) {
       console.error('Error fetching return requests:', error);
       setRequests([]);

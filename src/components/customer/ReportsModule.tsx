@@ -34,7 +34,7 @@ export const ReportsModule = () => {
     if (!user) return;
 
     try {
-      // Mock data for now
+      // Mock data for demo
       const mockReports: Report[] = [
         {
           id: '1',
@@ -62,19 +62,7 @@ export const ReportsModule = () => {
         },
       ];
 
-      // Try database fetch
-      const { data, error } = await supabase
-        .from('customer_reports')
-        .select('*')
-        .eq('customer_id', user.id)
-        .order('generated_date', { ascending: false });
-
-      if (error) {
-        console.warn('Database fetch failed, using mock data:', error);
-        setReports(mockReports);
-      } else {
-        setReports(data && data.length > 0 ? data : mockReports);
-      }
+      setReports(mockReports);
     } catch (error) {
       console.error('Error fetching reports:', error);
       setReports([]);

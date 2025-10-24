@@ -50,7 +50,7 @@ export const SupportCommunicationModule = () => {
     if (!user) return;
 
     try {
-      // Mock data for now
+      // Mock data for demo
       const mockChats: Chat[] = [
         {
           id: '1',
@@ -104,19 +104,7 @@ export const SupportCommunicationModule = () => {
         },
       ];
 
-      // Try database fetch
-      const { data, error } = await supabase
-        .from('support_chats')
-        .select('*')
-        .eq('customer_id', user.id)
-        .order('last_message_time', { ascending: false });
-
-      if (error) {
-        console.warn('Database fetch failed, using mock data:', error);
-        setChats(mockChats);
-      } else {
-        setChats(data && data.length > 0 ? data : mockChats);
-      }
+      setChats(mockChats);
     } catch (error) {
       console.error('Error fetching chats:', error);
       setChats([]);
