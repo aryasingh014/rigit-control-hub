@@ -1,319 +1,436 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, FileText, CheckCircle, XCircle, Calendar, AlertTriangle } from 'lucide-react';
+import { Plus, Edit, FileText, CheckCircle, XCircle, Loader2, AlertTriangle } from 'lucide-react';
 
-const contractsData = [
-  { id: 'RC-2025-001', customer: 'ABC Construction LLC', project: 'Downtown Tower', equipment: 'Scaffolding Set (Complete)', startDate: '2025-01-15', endDate: '2025-03-15', status: 'active', amount: 12500, renewalDate: '2025-03-10', approvalStatus: 'approved' },
-  { id: 'RC-2025-002', customer: 'XYZ Builders', project: 'Residential Complex', equipment: 'Safety Equipment Bundle', startDate: '2025-02-01', endDate: '2025-04-01', status: 'active', amount: 8900, renewalDate: '2025-03-25', approvalStatus: 'approved' },
-  { id: 'RC-2025-003', customer: 'Elite Construction', project: 'Office Building', equipment: 'Mobile Platforms (x3)', startDate: '2025-01-20', endDate: '2025-02-20', status: 'completed', amount: 15200, renewalDate: null, approvalStatus: 'approved' },
-  { id: 'RC-2025-004', customer: 'Modern Builders', project: 'Mall Extension', equipment: 'Formwork Panels', startDate: '2025-03-01', endDate: '2025-05-01', status: 'pending', amount: 6750, renewalDate: '2025-04-25', approvalStatus: 'pending' },
-];
+interface Contract {
+  id: string;
+  contract_number: string;
+  so_id?: string;
+  customer_id?: string;
+  project_name?: string;
+  site_location?: string;
+  start_date: string;
+  end_date: string;
+  total_amount: number;
+  status: string;
+  deposit_paid: boolean;
+  payment_terms?: string;
+  terms?: string;
+  created_at: string;
+  created_by?: string;
+  approved_by?: string;
+}
 
 export const ContractsModule = () => {
-  const [contracts, setContracts] = useState(contractsData);
-  const [open, setOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editingContract, setEditingContract] = useState<any>(null);
+  const { user } = useAuth();
   const { toast } = useToast();
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [approvedSalesOrders, setApprovedSalesOrders] = useState<any[]>([]);
+  const [selectedSO, setSelectedSO] = useState('');
   const [formData, setFormData] = useState({
-    customer: '', project: '', equipment: '', startDate: '', endDate: '', amount: ''
+    deposit_amount: '',
+    payment_terms: '',
+    terms: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchContracts();
+    fetchApprovedSalesOrders();
+  }, []);
+
+  const fetchContracts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('rental_contracts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setContracts(data || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchApprovedSalesOrders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sales_orders')
+        .select('*')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setApprovedSalesOrders(data || []);
+    } catch (error: any) {
+      console.error('Error fetching sales orders:', error);
+    }
+  };
+
+  const handleCreateContract = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically save to database
-    console.log('Creating contract:', formData);
-    const newContract = {
-      id: `RC-2025-${(contracts.length + 1).toString().padStart(3, '0')}`,
-      customer: formData.customer,
-      project: formData.project,
-      equipment: formData.equipment,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      status: 'pending',
-      amount: parseInt(formData.amount),
-      renewalDate: null,
-      approvalStatus: 'pending'
-    };
-    setContracts([...contracts, newContract]);
-    toast({
-      title: 'Contract Created',
-      description: `Contract for ${formData.customer} has been created successfully.`,
-    });
-    setOpen(false);
-    setFormData({ customer: '', project: '', equipment: '', startDate: '', endDate: '', amount: '' });
+    if (!selectedSO || !user) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select a sales order',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      // Get sales order details
+      const salesOrder = approvedSalesOrders.find(so => so.id === selectedSO);
+      if (!salesOrder) throw new Error('Sales Order not found');
+
+      // Generate contract number (simple version, can be improved)
+      const year = new Date().getFullYear().toString().slice(-2);
+      const count = contracts.length + 1;
+      const contractNumber = `RC-${year}-${String(count).padStart(3, '0')}`;
+
+      // Create contract
+      const { data: contractData, error: contractError } = await supabase
+        .from('rental_contracts')
+        .insert([{
+          contract_number: contractNumber,
+          so_id: salesOrder.id,
+          customer_id: salesOrder.customer_id,
+          project_name: salesOrder.project_name,
+          site_location: salesOrder.site_location,
+          start_date: salesOrder.rental_start_date,
+          end_date: salesOrder.rental_end_date,
+          total_amount: salesOrder.total_amount,
+          vat_amount: salesOrder.vat_amount,
+          grand_total: salesOrder.total_amount + salesOrder.vat_amount,
+          payment_terms: formData.payment_terms,
+          terms: formData.terms,
+          deposit_paid: false,
+          created_by: user.id,
+        }])
+        .select()
+        .single();
+
+      if (contractError) throw contractError;
+
+      // Update sales order status
+      await supabase
+        .from('sales_orders')
+        .update({ status: 'converted_to_contract' })
+        .eq('id', salesOrder.id);
+
+      toast({
+        title: 'Success',
+        description: `Contract ${contractNumber} created successfully`,
+      });
+
+      setDialogOpen(false);
+      setSelectedSO('');
+      setFormData({ deposit_amount: '', payment_terms: '', terms: '' });
+      fetchContracts();
+      fetchApprovedSalesOrders();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleEdit = (contract: any) => {
-    setEditingContract(contract);
-    setEditDialogOpen(true);
+  const handleApproveContract = async (contract: Contract) => {
+    try {
+      const { error } = await supabase
+        .from('rental_contracts')
+        .update({ 
+          status: 'active',
+          approved_by: user?.id 
+        })
+        .eq('id', contract.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Contract Approved',
+        description: `${contract.contract_number} has been approved and activated.`,
+      });
+
+      fetchContracts();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setContracts(contracts.map(c => c.id === editingContract.id ? editingContract : c));
-    toast({
-      title: 'Contract Updated',
-      description: `${editingContract.id} has been updated successfully.`,
-    });
-    setEditDialogOpen(false);
-    setEditingContract(null);
-  };
+  const handleRejectContract = async (contract: Contract) => {
+    try {
+      const { error } = await supabase
+        .from('rental_contracts')
+        .update({ status: 'draft' })
+        .eq('id', contract.id);
 
-  const handleDelete = (id: string) => {
-    setContracts(contracts.filter(c => c.id !== id));
-    toast({
-      title: 'Contract Deleted',
-      description: `${id} has been removed.`,
-    });
+      if (error) throw error;
+
+      toast({
+        title: 'Contract Rejected',
+        description: `${contract.contract_number} has been rejected.`,
+      });
+
+      fetchContracts();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
   const getStatusBadgeVariant = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+      draft: 'secondary',
       active: 'default',
       completed: 'secondary',
       pending: 'outline',
+      rejected: 'destructive',
       cancelled: 'destructive',
     };
     return variants[status] || 'outline';
   };
 
-  const getApprovalBadgeVariant = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-      approved: 'default',
-      pending: 'outline',
-      rejected: 'destructive',
-    };
-    return variants[status] || 'outline';
-  };
-
-  const handleApproveContract = (contract: any) => {
-    const updatedContract = { ...contract, approvalStatus: 'approved', status: 'active' };
-    setContracts(contracts.map(c => c.id === contract.id ? updatedContract : c));
-    toast({
-      title: 'Contract Approved',
-      description: `${contract.id} has been approved and activated.`,
-    });
-  };
-
-  const handleRejectContract = (contract: any) => {
-    const updatedContract = { ...contract, approvalStatus: 'rejected', status: 'cancelled' };
-    setContracts(contracts.map(c => c.id === contract.id ? updatedContract : c));
-    toast({
-      title: 'Contract Rejected',
-      description: `${contract.id} has been rejected.`,
-    });
-  };
-
-  const isRenewalDue = (renewalDate: string | null) => {
-    if (!renewalDate) return false;
+  const isRenewalDue = (endDate: string) => {
     const today = new Date();
-    const renewal = new Date(renewalDate);
-    const diffTime = renewal.getTime() - today.getTime();
+    const end = new Date(endDate);
+    const diffTime = end.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays <= 30 && diffDays >= 0;
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Contract Oversight</h3>
-          <p className="text-sm text-muted-foreground">Approve/reject contracts, monitor renewals, and track contract lifecycle</p>
+          <p className="text-sm text-muted-foreground">Create contracts from approved sales orders and manage lease agreements</p>
         </div>
-        <div className="flex gap-2">
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                New Contract
-              </Button>
-            </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create New Contract</DialogTitle>
-              <DialogDescription>Enter contract details</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="customer">Customer</Label>
-                  <Input id="customer" value={formData.customer} onChange={(e) => setFormData({ ...formData, customer: e.target.value })} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="project">Project</Label>
-                  <Input id="project" value={formData.project} onChange={(e) => setFormData({ ...formData, project: e.target.value })} required />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="equipment">Equipment</Label>
-                <Input id="equipment" value={formData.equipment} onChange={(e) => setFormData({ ...formData, equipment: e.target.value })} required />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date</Label>
-                  <Input id="startDate" type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="endDate">End Date</Label>
-                  <Input id="endDate" type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} required />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="amount">Contract Amount (AED)</Label>
-                <Input id="amount" type="number" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required />
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button type="submit">Create Contract</Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-        </div>
+        <Button onClick={() => setDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Contract
+        </Button>
       </div>
 
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+      {/* Create Contract Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Contract</DialogTitle>
-            <DialogDescription>Update contract details</DialogDescription>
+            <DialogTitle>Create Lease Agreement</DialogTitle>
+            <DialogDescription>Convert an approved sales order into a rental contract</DialogDescription>
           </DialogHeader>
-          {editingContract && (
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-customer">Customer</Label>
-                  <Input id="edit-customer" value={editingContract.customer} onChange={(e) => setEditingContract({ ...editingContract, customer: e.target.value })} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-project">Project</Label>
-                  <Input id="edit-project" value={editingContract.project} onChange={(e) => setEditingContract({ ...editingContract, project: e.target.value })} required />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-equipment">Equipment</Label>
-                <Input id="edit-equipment" value={editingContract.equipment} onChange={(e) => setEditingContract({ ...editingContract, equipment: e.target.value })} required />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-startDate">Start Date</Label>
-                  <Input id="edit-startDate" type="date" value={editingContract.startDate} onChange={(e) => setEditingContract({ ...editingContract, startDate: e.target.value })} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-endDate">End Date</Label>
-                  <Input id="edit-endDate" type="date" value={editingContract.endDate} onChange={(e) => setEditingContract({ ...editingContract, endDate: e.target.value })} required />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-amount">Contract Amount (AED)</Label>
-                  <Input id="edit-amount" type="number" value={editingContract.amount} onChange={(e) => setEditingContract({ ...editingContract, amount: parseInt(e.target.value) })} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-status">Status</Label>
-                  <Select value={editingContract.status} onValueChange={(val) => setEditingContract({ ...editingContract, status: val })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-                <Button type="submit">Update Contract</Button>
-              </div>
-            </form>
-          )}
+          <form onSubmit={handleCreateContract} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Approved Sales Order *</Label>
+              <Select value={selectedSO} onValueChange={setSelectedSO}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sales order" />
+                </SelectTrigger>
+                <SelectContent>
+                  {approvedSalesOrders.map((so) => (
+                    <SelectItem key={so.id} value={so.id}>
+                      {so.so_number} - {so.customer_name} - {so.project_name || 'N/A'} - AED {so.total_amount.toFixed(2)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="payment_terms">Payment Terms</Label>
+              <Select value={formData.payment_terms} onValueChange={(val) => setFormData({ ...formData, payment_terms: val })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment terms" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="full_advance">Full Advance Payment</SelectItem>
+                  <SelectItem value="50_advance">50% Advance, 50% on Delivery</SelectItem>
+                  <SelectItem value="30_60_10">30% Advance, 60% on Delivery, 10% on Return</SelectItem>
+                  <SelectItem value="net_30">Net 30 Days</SelectItem>
+                  <SelectItem value="net_60">Net 60 Days</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="terms">Contract Terms & Conditions</Label>
+              <Textarea
+                id="terms"
+                value={formData.terms}
+                onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
+                rows={5}
+                placeholder="Enter contract terms and conditions..."
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={submitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={submitting || !selectedSO}>
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Contract'
+                )}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
 
+      {/* Contracts Table */}
       <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Contract ID</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Project</TableHead>
-              <TableHead>Equipment</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>End Date</TableHead>
-              <TableHead>Renewal</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Approval</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {contracts.map((contract) => (
-              <TableRow key={contract.id}>
-                <TableCell className="font-medium">{contract.id}</TableCell>
-                <TableCell>{contract.customer}</TableCell>
-                <TableCell>{contract.project}</TableCell>
-                <TableCell className="text-sm">{contract.equipment}</TableCell>
-                <TableCell className="text-sm">{contract.startDate}</TableCell>
-                <TableCell className="text-sm">{contract.endDate}</TableCell>
-                <TableCell>
-                  {contract.renewalDate ? (
-                    <div className="flex items-center gap-1">
-                      {isRenewalDue(contract.renewalDate) && <AlertTriangle className="h-3 w-3 text-orange-500" />}
-                      <span className={`text-sm ${isRenewalDue(contract.renewalDate) ? 'text-orange-600 font-medium' : ''}`}>
-                        {contract.renewalDate}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-                <TableCell className="font-semibold">AED {contract.amount.toLocaleString()}</TableCell>
-                <TableCell>
-                  <Badge variant={getApprovalBadgeVariant(contract.approvalStatus)}>
-                    {contract.approvalStatus}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={getStatusBadgeVariant(contract.status)}>
-                    {contract.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex gap-1 justify-end">
-                    {contract.approvalStatus === 'pending' && (
-                      <>
-                        <Button variant="ghost" size="icon" title="Approve Contract" onClick={() => handleApproveContract(contract)}>
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        </Button>
-                        <Button variant="ghost" size="icon" title="Reject Contract" onClick={() => handleRejectContract(contract)}>
-                          <XCircle className="h-4 w-4 text-red-600" />
-                        </Button>
-                      </>
-                    )}
-                    <Button variant="ghost" size="icon" title="Edit Contract" onClick={() => handleEdit(contract)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" title="Delete Contract" onClick={() => handleDelete(contract.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+        {contracts.length === 0 ? (
+          <div className="text-center py-12">
+            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No contracts found</p>
+            <p className="text-sm text-muted-foreground mt-2">Create a contract from an approved sales order</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Contract #</TableHead>
+                <TableHead>Project</TableHead>
+                <TableHead>Site Location</TableHead>
+                <TableHead>Start Date</TableHead>
+                <TableHead>End Date</TableHead>
+                <TableHead>Renewal Alert</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Deposit</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {contracts.map((contract) => (
+                <TableRow key={contract.id}>
+                  <TableCell className="font-medium">{contract.contract_number}</TableCell>
+                  <TableCell>{contract.project_name || 'N/A'}</TableCell>
+                  <TableCell className="text-sm">{contract.site_location || 'N/A'}</TableCell>
+                  <TableCell className="text-sm">{new Date(contract.start_date).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-sm">{new Date(contract.end_date).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    {isRenewalDue(contract.end_date) && contract.status === 'active' ? (
+                      <div className="flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3 text-orange-500" />
+                        <span className="text-sm text-orange-600 font-medium">Due Soon</span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-semibold">AED {contract.total_amount.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Badge variant={contract.deposit_paid ? 'default' : 'secondary'}>
+                      {contract.deposit_paid ? 'Paid' : 'Pending'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusBadgeVariant(contract.status)}>
+                      {contract.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex gap-1 justify-end">
+                      {contract.status === 'draft' && (
+                        <>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Approve Contract" 
+                            onClick={() => handleApproveContract(contract)}
+                          >
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Reject Contract" 
+                            onClick={() => handleRejectContract(contract)}
+                          >
+                            <XCircle className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </>
+                      )}
+                      <Button variant="ghost" size="icon" title="View Details">
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm font-medium text-muted-foreground mb-2">Total Contracts</div>
+          <div className="text-2xl font-bold">{contracts.length}</div>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm font-medium text-muted-foreground mb-2">Active Contracts</div>
+          <div className="text-2xl font-bold">{contracts.filter(c => c.status === 'active').length}</div>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm font-medium text-muted-foreground mb-2">Renewal Alerts</div>
+          <div className="text-2xl font-bold">
+            {contracts.filter(c => isRenewalDue(c.end_date) && c.status === 'active').length}
+          </div>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm font-medium text-muted-foreground mb-2">Total Value</div>
+          <div className="text-2xl font-bold">
+            AED {contracts.filter(c => c.status === 'active').reduce((sum, c) => sum + c.total_amount, 0).toFixed(2)}
+          </div>
+        </div>
       </div>
     </div>
   );

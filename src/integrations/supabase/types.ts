@@ -371,13 +371,20 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           customer_id: string
+          deposit_paid: boolean | null
+          deposit_paid_date: string | null
           end_date: string
           grand_total: number | null
           id: string
+          inspection_notes: string | null
+          payment_terms: string | null
+          penalty_charges: number | null
           project_name: string | null
           site_location: string | null
+          so_id: string | null
           start_date: string
           status: Database["public"]["Enums"]["contract_status"] | null
+          terms: string | null
           total_amount: number | null
           updated_at: string | null
           vat_amount: number | null
@@ -388,13 +395,20 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           customer_id: string
+          deposit_paid?: boolean | null
+          deposit_paid_date?: string | null
           end_date: string
           grand_total?: number | null
           id?: string
+          inspection_notes?: string | null
+          payment_terms?: string | null
+          penalty_charges?: number | null
           project_name?: string | null
           site_location?: string | null
+          so_id?: string | null
           start_date: string
           status?: Database["public"]["Enums"]["contract_status"] | null
+          terms?: string | null
           total_amount?: number | null
           updated_at?: string | null
           vat_amount?: number | null
@@ -405,13 +419,20 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           customer_id?: string
+          deposit_paid?: boolean | null
+          deposit_paid_date?: string | null
           end_date?: string
           grand_total?: number | null
           id?: string
+          inspection_notes?: string | null
+          payment_terms?: string | null
+          penalty_charges?: number | null
           project_name?: string | null
           site_location?: string | null
+          so_id?: string | null
           start_date?: string
           status?: Database["public"]["Enums"]["contract_status"] | null
+          terms?: string | null
           total_amount?: number | null
           updated_at?: string | null
           vat_amount?: number | null
@@ -436,6 +457,196 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rental_contracts_so_id_fkey"
+            columns: ["so_id"]
+            isOneToOne: false
+            referencedRelation: "sales_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_order_items: {
+        Row: {
+          availability_status: string | null
+          created_at: string | null
+          cutting_charges: number | null
+          description: string | null
+          equipment_code: string | null
+          equipment_id: string | null
+          equipment_type: string
+          id: string
+          line_total: number
+          quantity_available: number | null
+          quantity_ordered: number
+          rate_per_unit: number
+          rental_days: number
+          so_id: string
+          unit: string
+          wastage_charges: number | null
+          wastage_percentage: number | null
+        }
+        Insert: {
+          availability_status?: string | null
+          created_at?: string | null
+          cutting_charges?: number | null
+          description?: string | null
+          equipment_code?: string | null
+          equipment_id?: string | null
+          equipment_type: string
+          id?: string
+          line_total: number
+          quantity_available?: number | null
+          quantity_ordered: number
+          rate_per_unit: number
+          rental_days: number
+          so_id: string
+          unit?: string
+          wastage_charges?: number | null
+          wastage_percentage?: number | null
+        }
+        Update: {
+          availability_status?: string | null
+          created_at?: string | null
+          cutting_charges?: number | null
+          description?: string | null
+          equipment_code?: string | null
+          equipment_id?: string | null
+          equipment_type?: string
+          id?: string
+          line_total?: number
+          quantity_available?: number | null
+          quantity_ordered?: number
+          rate_per_unit?: number
+          rental_days?: number
+          so_id?: string
+          unit?: string
+          wastage_charges?: number | null
+          wastage_percentage?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_order_items_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_order_items_so_id_fkey"
+            columns: ["so_id"]
+            isOneToOne: false
+            referencedRelation: "sales_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_orders: {
+        Row: {
+          approval_date: string | null
+          approved_by: string | null
+          created_at: string | null
+          created_by: string
+          customer_email: string
+          customer_id: string | null
+          customer_name: string
+          customer_phone: string
+          deposit_amount: number | null
+          id: string
+          notes: string | null
+          project_name: string | null
+          quotation_id: string | null
+          rejection_reason: string | null
+          rental_duration_days: number
+          rental_end_date: string
+          rental_start_date: string
+          site_location: string
+          so_number: string
+          status: string
+          stock_check_status: string | null
+          stock_checked_at: string | null
+          stock_checked_by: string | null
+          subtotal: number
+          total_amount: number
+          updated_at: string | null
+          vat_amount: number
+          vat_percentage: number
+        }
+        Insert: {
+          approval_date?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          created_by: string
+          customer_email: string
+          customer_id?: string | null
+          customer_name: string
+          customer_phone: string
+          deposit_amount?: number | null
+          id?: string
+          notes?: string | null
+          project_name?: string | null
+          quotation_id?: string | null
+          rejection_reason?: string | null
+          rental_duration_days: number
+          rental_end_date: string
+          rental_start_date: string
+          site_location: string
+          so_number: string
+          status?: string
+          stock_check_status?: string | null
+          stock_checked_at?: string | null
+          stock_checked_by?: string | null
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string | null
+          vat_amount?: number
+          vat_percentage?: number
+        }
+        Update: {
+          approval_date?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          created_by?: string
+          customer_email?: string
+          customer_id?: string | null
+          customer_name?: string
+          customer_phone?: string
+          deposit_amount?: number | null
+          id?: string
+          notes?: string | null
+          project_name?: string | null
+          quotation_id?: string | null
+          rejection_reason?: string | null
+          rental_duration_days?: number
+          rental_end_date?: string
+          rental_start_date?: string
+          site_location?: string
+          so_number?: string
+          status?: string
+          stock_check_status?: string | null
+          stock_checked_at?: string | null
+          stock_checked_by?: string | null
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string | null
+          vat_amount?: number
+          vat_percentage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_orders_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
             referencedColumns: ["id"]
           },
         ]
@@ -510,8 +721,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_stock_availability: {
+        Args: { p_so_id: string }
+        Returns: {
+          equipment_type: string
+          is_available: boolean
+          item_id: string
+          quantity_available: number
+          quantity_ordered: number
+        }[]
+      }
       generate_enquiry_number: { Args: never; Returns: string }
       generate_quotation_number: { Args: never; Returns: string }
+      generate_so_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
