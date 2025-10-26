@@ -80,6 +80,71 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_orders: {
+        Row: {
+          additional_notes: string | null
+          created_at: string | null
+          created_by: string | null
+          customer_email: string
+          customer_id: string | null
+          customer_name: string
+          customer_phone: string
+          duration_days: number
+          equipment_type: string
+          id: string
+          location: string
+          order_number: string
+          quantity: number
+          start_date: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          customer_email: string
+          customer_id?: string | null
+          customer_name: string
+          customer_phone: string
+          duration_days: number
+          equipment_type: string
+          id?: string
+          location: string
+          order_number: string
+          quantity: number
+          start_date: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          additional_notes?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          customer_email?: string
+          customer_id?: string | null
+          customer_name?: string
+          customer_phone?: string
+          duration_days?: number
+          equipment_type?: string
+          id?: string
+          location?: string
+          order_number?: string
+          quantity?: number
+          start_date?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
@@ -163,6 +228,171 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      invoices: {
+        Row: {
+          amount: number
+          contract_id: string | null
+          created_at: string | null
+          customer_id: string
+          due_date: string
+          id: string
+          invoice_number: string
+          invoice_type: string
+          notes: string | null
+          paid_date: string | null
+          payment_method: string | null
+          status: string
+          total_amount: number
+          updated_at: string | null
+          vat_amount: number
+          vat_percentage: number
+        }
+        Insert: {
+          amount?: number
+          contract_id?: string | null
+          created_at?: string | null
+          customer_id: string
+          due_date: string
+          id?: string
+          invoice_number: string
+          invoice_type: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+          vat_amount?: number
+          vat_percentage?: number
+        }
+        Update: {
+          amount?: number
+          contract_id?: string | null
+          created_at?: string | null
+          customer_id?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          invoice_type?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+          vat_amount?: number
+          vat_percentage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "rental_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          reference_id: string | null
+          reference_type: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          reference_id?: string | null
+          reference_type?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          customer_id: string
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          payment_date: string | null
+          payment_method: string
+          payment_number: string
+          status: string
+          transaction_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          customer_id: string
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          payment_date?: string | null
+          payment_method: string
+          payment_number: string
+          status?: string
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          customer_id?: string
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          payment_date?: string | null
+          payment_method?: string
+          payment_number?: string
+          status?: string
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -468,6 +698,90 @@ export type Database = {
           },
         ]
       }
+      return_requests: {
+        Row: {
+          actual_return_date: string | null
+          contract_id: string | null
+          created_at: string | null
+          customer_id: string
+          customer_notes: string | null
+          dispute_reason: string | null
+          equipment_type: string
+          expected_return_date: string
+          id: string
+          inspected_at: string | null
+          inspected_by: string | null
+          inspection_notes: string | null
+          quantity_damaged: number | null
+          quantity_missing: number | null
+          quantity_received: number | null
+          quantity_returned: number
+          request_number: string
+          return_type: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          actual_return_date?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          customer_id: string
+          customer_notes?: string | null
+          dispute_reason?: string | null
+          equipment_type: string
+          expected_return_date: string
+          id?: string
+          inspected_at?: string | null
+          inspected_by?: string | null
+          inspection_notes?: string | null
+          quantity_damaged?: number | null
+          quantity_missing?: number | null
+          quantity_received?: number | null
+          quantity_returned: number
+          request_number: string
+          return_type: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          actual_return_date?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          customer_id?: string
+          customer_notes?: string | null
+          dispute_reason?: string | null
+          equipment_type?: string
+          expected_return_date?: string
+          id?: string
+          inspected_at?: string | null
+          inspected_by?: string | null
+          inspection_notes?: string | null
+          quantity_damaged?: number | null
+          quantity_missing?: number | null
+          quantity_received?: number | null
+          quantity_returned?: number
+          request_number?: string
+          return_type?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_requests_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "rental_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_order_items: {
         Row: {
           availability_status: string | null
@@ -732,7 +1046,11 @@ export type Database = {
         }[]
       }
       generate_enquiry_number: { Args: never; Returns: string }
+      generate_invoice_number: { Args: never; Returns: string }
+      generate_order_number: { Args: never; Returns: string }
+      generate_payment_number: { Args: never; Returns: string }
       generate_quotation_number: { Args: never; Returns: string }
+      generate_return_request_number: { Args: never; Returns: string }
       generate_so_number: { Args: never; Returns: string }
       has_role: {
         Args: {
