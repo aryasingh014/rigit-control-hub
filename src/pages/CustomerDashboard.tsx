@@ -12,7 +12,6 @@ import { RentalsModule } from '@/components/customer/RentalsModule';
 import { InvoicesModule } from '@/components/customer/InvoicesModule';
 import { ProfileModule } from '@/components/customer/ProfileModule';
 import { ReturnRequestsModule } from '@/components/customer/ReturnRequestsModule';
-import { SupportCommunicationModule } from '@/components/customer/SupportCommunicationModule';
 import { ReportsModule } from '@/components/customer/ReportsModule';
 
 const CustomerDashboard = () => {
@@ -23,13 +22,13 @@ const CustomerDashboard = () => {
   useEffect(() => {
     // Check for hash in URL to set active tab
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['overview', 'rentals', 'invoices', 'returns', 'support', 'reports', 'profile'].includes(hash)) {
+    if (hash && ['overview', 'rentals', 'invoices', 'returns', 'reports', 'profile'].includes(hash)) {
       setActiveTab(hash);
     }
 
     // Listen for custom tab change events from sidebar
     const handleTabChange = (event: any) => {
-      if (event.detail && ['overview', 'rentals', 'invoices', 'returns', 'support', 'reports', 'profile'].includes(event.detail)) {
+      if (event.detail && ['overview', 'rentals', 'invoices', 'returns', 'reports', 'profile'].includes(event.detail)) {
         setActiveTab(event.detail);
       }
     };
@@ -62,12 +61,11 @@ const CustomerDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-           <TabsList className="grid w-full grid-cols-7">
+           <TabsList className="grid w-full grid-cols-6">
              <TabsTrigger value="overview">Overview</TabsTrigger>
              <TabsTrigger value="rentals">My Rentals</TabsTrigger>
              <TabsTrigger value="invoices">Invoices & Payments</TabsTrigger>
              <TabsTrigger value="returns">Return Requests</TabsTrigger>
-             <TabsTrigger value="support">Support & Communication</TabsTrigger>
              <TabsTrigger value="reports">Reports</TabsTrigger>
              <TabsTrigger value="profile">Profile</TabsTrigger>
            </TabsList>
@@ -152,16 +150,6 @@ const CustomerDashboard = () => {
                      </div>
                    </button>
                    <button
-                     onClick={() => setActiveTab('support')}
-                     className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-secondary transition-colors text-left"
-                   >
-                     <User className="h-5 w-5 text-primary" />
-                     <div>
-                       <p className="font-medium">Contact Support</p>
-                       <p className="text-xs text-muted-foreground">Chat with sales or warehouse teams</p>
-                     </div>
-                   </button>
-                   <button
                      onClick={() => setActiveTab('reports')}
                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-secondary transition-colors text-left"
                    >
@@ -169,6 +157,16 @@ const CustomerDashboard = () => {
                      <div>
                        <p className="font-medium">Download Reports</p>
                        <p className="text-xs text-muted-foreground">Rental summary and outstanding balance</p>
+                     </div>
+                   </button>
+                   <button
+                     onClick={() => setActiveTab('profile')}
+                     className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-secondary transition-colors text-left"
+                   >
+                     <User className="h-5 w-5 text-primary" />
+                     <div>
+                       <p className="font-medium">My Profile</p>
+                       <p className="text-xs text-muted-foreground">Update account information</p>
                      </div>
                    </button>
                  </CardContent>
@@ -214,10 +212,6 @@ const CustomerDashboard = () => {
 
           <TabsContent value="returns">
             <ReturnRequestsModule />
-          </TabsContent>
-
-          <TabsContent value="support">
-            <SupportCommunicationModule />
           </TabsContent>
 
           <TabsContent value="reports">

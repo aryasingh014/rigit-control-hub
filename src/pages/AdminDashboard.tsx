@@ -8,8 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EquipmentCatalogModule } from '@/components/admin/EquipmentCatalogModule';
 import { CustomerModule } from '@/components/admin/CustomerModule';
-import { VendorModule } from '@/components/admin/VendorModule';
 import { UsersRolesModule } from '@/components/admin/UsersRolesModule';
+import { ProfileModule } from '@/components/customer/ProfileModule';
 import { ReportsModule } from '@/components/admin/ReportsModule';
 import { SettingsModule } from '@/components/admin/SettingsModule';
 import { ContractsModule } from '@/components/admin/ContractsModule';
@@ -45,13 +45,13 @@ const AdminDashboard = () => {
   useEffect(() => {
     // Check for hash in URL to set active tab
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['overview', 'equipment', 'customers', 'vendors', 'users', 'masterdata', 'contracts', 'inventory', 'finance', 'invoices', 'workorders', 'dispatch', 'reports'].includes(hash)) {
+    if (hash && ['overview', 'equipment', 'customers', 'users', 'masterdata', 'contracts', 'inventory', 'finance', 'invoices', 'workorders', 'dispatch', 'reports', 'profile'].includes(hash)) {
       setActiveTab(hash);
     }
 
     // Listen for custom tab change events from sidebar
     const handleTabChange = (event: any) => {
-      if (event.detail && ['overview', 'equipment', 'customers', 'vendors', 'users', 'masterdata', 'contracts', 'inventory', 'finance', 'invoices', 'workorders', 'dispatch', 'reports'].includes(event.detail)) {
+      if (event.detail && ['overview', 'equipment', 'customers', 'users', 'masterdata', 'contracts', 'inventory', 'finance', 'invoices', 'workorders', 'dispatch', 'reports', 'profile'].includes(event.detail)) {
         setActiveTab(event.detail);
       }
     };
@@ -108,11 +108,11 @@ const AdminDashboard = () => {
                   <TabsTrigger value="finance" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Finance</TabsTrigger>
                   <TabsTrigger value="equipment" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Equipment</TabsTrigger>
                   <TabsTrigger value="customers" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Customers</TabsTrigger>
-                  <TabsTrigger value="vendors" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Vendors</TabsTrigger>
                   <TabsTrigger value="invoices" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Invoices</TabsTrigger>
                   <TabsTrigger value="workorders" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Work Orders</TabsTrigger>
                   <TabsTrigger value="dispatch" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Dispatch</TabsTrigger>
                   <TabsTrigger value="reports" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Reports</TabsTrigger>
+                  <TabsTrigger value="profile" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Profile</TabsTrigger>
                 </TabsList>
               </div>
             </div>
@@ -215,10 +215,6 @@ const AdminDashboard = () => {
             <CustomerModule />
           </TabsContent>
 
-          <TabsContent value="vendors">
-            <VendorModule />
-          </TabsContent>
-
           <TabsContent value="users">
             <UsersRolesModule />
           </TabsContent>
@@ -253,6 +249,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="reports">
             <ReportsModule />
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <ProfileModule />
           </TabsContent>
         </Tabs>
       </div>

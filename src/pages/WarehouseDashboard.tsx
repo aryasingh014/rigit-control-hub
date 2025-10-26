@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DispatchEquipmentDialog } from '@/components/forms/DispatchEquipmentDialog';
 import { AddRemoveEquipmentDialog } from '@/components/forms/AddRemoveEquipmentDialog';
+import { ProfileModule } from '@/components/customer/ProfileModule';
 import { useToast } from '@/hooks/use-toast';
 
 const WarehouseDashboard = () => {
@@ -29,7 +30,7 @@ const WarehouseDashboard = () => {
   useEffect(() => {
     // Listen for warehouse tab change events from sidebar
     const handleWarehouseTabChange = (event: any) => {
-      if (event.detail && ['overview', 'dispatch', 'returns', 'stock', 'reports'].includes(event.detail)) {
+      if (event.detail && ['overview', 'dispatch', 'returns', 'stock', 'reports', 'profile'].includes(event.detail)) {
         setActiveTab(event.detail);
       }
     };
@@ -54,12 +55,13 @@ const WarehouseDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="stock">Stock</TabsTrigger>
             <TabsTrigger value="dispatch">Dispatch</TabsTrigger>
             <TabsTrigger value="returns">Returns</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -611,6 +613,10 @@ const WarehouseDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <ProfileModule />
           </TabsContent>
         </Tabs>
       </div>

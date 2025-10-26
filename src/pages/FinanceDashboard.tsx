@@ -13,8 +13,8 @@ import { InvoicesModule } from '@/components/admin/InvoicesModule';
 import { PaymentsModule } from '@/components/finance/PaymentsModule';
 import { FinanceReportsModule } from '@/components/finance/FinanceReportsModule';
 import { DepositPenaltyModule } from '@/components/finance/DepositPenaltyModule';
-import { VendorCostModule } from '@/components/finance/VendorCostModule';
 import { ApprovalWorkflowModule } from '@/components/finance/ApprovalWorkflowModule';
+import { ProfileModule } from '@/components/customer/ProfileModule';
 import { useToast } from '@/hooks/use-toast';
 
 const FinanceDashboard = () => {
@@ -34,7 +34,7 @@ const FinanceDashboard = () => {
   useEffect(() => {
     // Listen for finance tab change events from sidebar
     const handleFinanceTabChange = (event: any) => {
-      if (event.detail && ['overview', 'invoices', 'payments', 'deposits', 'vendor-costs', 'approvals', 'reports'].includes(event.detail)) {
+      if (event.detail && ['overview', 'invoices', 'payments', 'deposits', 'approvals', 'reports', 'profile'].includes(event.detail)) {
         setActiveTab(event.detail);
       }
     };
@@ -64,9 +64,9 @@ const FinanceDashboard = () => {
              <TabsTrigger value="invoices">Invoices</TabsTrigger>
              <TabsTrigger value="payments">Payments</TabsTrigger>
              <TabsTrigger value="deposits">Deposits</TabsTrigger>
-             <TabsTrigger value="vendor-costs">Vendor Costs</TabsTrigger>
              <TabsTrigger value="approvals">Approvals</TabsTrigger>
              <TabsTrigger value="reports">Reports</TabsTrigger>
+             <TabsTrigger value="profile">Profile</TabsTrigger>
            </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -253,16 +253,16 @@ const FinanceDashboard = () => {
             <DepositPenaltyModule />
           </TabsContent>
 
-          <TabsContent value="vendor-costs">
-            <VendorCostModule />
-          </TabsContent>
-
           <TabsContent value="approvals">
             <ApprovalWorkflowModule />
           </TabsContent>
 
           <TabsContent value="reports">
             <FinanceReportsModule />
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <ProfileModule />
           </TabsContent>
         </Tabs>
       </div>

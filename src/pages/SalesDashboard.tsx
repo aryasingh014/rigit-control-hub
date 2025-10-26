@@ -15,7 +15,7 @@ import { InvoicesModule } from '@/components/admin/InvoicesModule';
 import EnquiryManagementModule from '@/components/sales/EnquiryManagementModule';
 import QuotationManagementModule from '@/components/sales/QuotationManagementModule';
 import SalesOrderManagementModule from '@/components/sales/SalesOrderManagementModule';
-import CustomerCommunicationModule from '@/components/sales/CustomerCommunicationModule';
+import { ProfileModule } from '@/components/customer/ProfileModule';
 import { useToast } from '@/hooks/use-toast';
 
 const SalesDashboard = () => {
@@ -35,7 +35,7 @@ const SalesDashboard = () => {
   useEffect(() => {
     // Listen for sales tab change events from sidebar
     const handleSalesTabChange = (event: any) => {
-      if (event.detail && ['contracts', 'quotations', 'customers', 'reports', 'enquiries', 'sales-orders', 'communication'].includes(event.detail)) {
+      if (event.detail && ['contracts', 'quotations', 'customers', 'reports', 'enquiries', 'sales-orders', 'profile'].includes(event.detail)) {
         const tabMap: Record<string, string> = {
           'contracts': 'contracts',
           'quotations': 'quotations',
@@ -43,7 +43,7 @@ const SalesDashboard = () => {
           'reports': 'reports',
           'enquiries': 'enquiries',
           'sales-orders': 'sales-orders',
-          'communication': 'communication'
+          'profile': 'profile'
         };
         setActiveTab(tabMap[event.detail] || 'overview');
       }
@@ -76,8 +76,8 @@ const SalesDashboard = () => {
              <TabsTrigger value="sales-orders">Sales Orders</TabsTrigger>
              <TabsTrigger value="contracts">Contracts</TabsTrigger>
              <TabsTrigger value="customers">Customers</TabsTrigger>
-             <TabsTrigger value="communication">Communication</TabsTrigger>
              <TabsTrigger value="reports">Reports</TabsTrigger>
+             <TabsTrigger value="profile">Profile</TabsTrigger>
            </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -282,10 +282,6 @@ const SalesDashboard = () => {
             <CustomerModule />
           </TabsContent>
 
-          <TabsContent value="communication">
-            <CustomerCommunicationModule />
-          </TabsContent>
-
           <TabsContent value="reports">
             <div className="space-y-6">
               <Card>
@@ -462,6 +458,10 @@ const SalesDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <ProfileModule />
           </TabsContent>
         </Tabs>
       </div>
